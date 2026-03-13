@@ -271,11 +271,14 @@ function seasonFor(lgId) {
   return now.getMonth() >= 7 ? yr : yr - 1;
 }
 
+// Bookmakers available in Sweden — used to tag "best Swedish odds"
 const SWEDISH_BK = ['bet365','unibet','betsson','comeon','come on','betway','pinnacle','888sport','nordicbet','mycasino'];
 function isSwedishBk(t) {
   const n = t.toLowerCase().replace(/[^a-z0-9]/g,'');
   return SWEDISH_BK.some(s => { const sn=s.replace(/[^a-z0-9]/g,''); return n===sn||n.includes(sn)||sn.includes(n); });
 }
+// Use ALL bookmakers for consensus — Swedish filter was too restrictive for Championship/non-Scandi leagues
+function useForConsensus() { return true; }
 
 // ============================================================
 // MATH
@@ -475,8 +478,10 @@ function processGame(game, leagueName, leagueKey, teamStatsMap) {
   const kickoff = new Date(game.commence_time);
   const raw1x2  = {};
 
-  const filtered = (game.bookmakers || []).filter(bk => isSwedishBk(bk.title));
-  for (const bk of filtered) {
+  // Use all bookmakers for consensus (wider coverage, especially for Championship)
+  // Swedish-accessible bookmakers are tagged separately for display
+  const allBks = (game.bookmakers || []);
+  for (const bk of allBks) {
     const mk = bk.markets?.find(m => m.key === 'h2h');
     if (mk) {
       const h = mk.outcomes.find(o => o.name === game.home_team)?.price;
@@ -518,21 +523,25 @@ function processGame(game, leagueName, leagueKey, teamStatsMap) {
   const mktPA = Math.round(cons.pA * 1000) / 10;
 
   const results = [];
+  // Tag each bookmaker entry with whether it's Swedish-accessible
   const mkBk = (fn, min, max) => Object.keys(raw1x2).map(bk => {
     const o = fn(raw1x2[bk]);
-    return o && o >= min && o <= max ? { bk, odds: o } : null;
+    if (!o || o < min || o > max) return null;
+    return { bk, odds: o, swedish: isSwedishBk(bk) };
   }).filter(Boolean);
 
   const push = (dcType, prob, bkOdds, mktProb) => {
     if (!bkOdds.length) return;
-    const best = bkOdds.reduce((a, b) => b.odds > a.odds ? b : a);
+    // Prefer best Swedish odds for display; fall back to global best
+    const swedishOdds = bkOdds.filter(b => b.swedish);
+    const best = (swedishOdds.length ? swedishOdds : bkOdds).reduce((a, b) => b.odds > a.odds ? b : a);
     const vp    = P.val(best.odds, prob);
     const kelly = P.kelly(best.odds, prob);
     results.push({
       gameId: game.id, homeTeam: game.home_team, awayTeam: game.away_team,
       leagueName, leagueKey, kickoff, dataSource,
       homeStats, awayStats,
-      dcType, bestOdds: best.odds, bestBk: best.bk,
+      dcType, bestOdds: best.odds, bestBk: best.bk, bestBkSwedish: best.swedish,
       valuePct:    vp,
       modelProb:   Math.round(prob * 1000) / 10,
       impliedProb: Math.round((mktProb ?? (1/best.odds)) * 1000) / 10,
@@ -737,7 +746,7 @@ function renderCard(m, threshold) {
         <div class="dc-value" style="color:${verdict==='play'?'var(--green-bright)':verdict==='watch'?'var(--yellow-bright)':'var(--text-muted)'}">
           ${m.valuePct > 0 ? '+' : ''}${m.valuePct}%
         </div>
-        <div class="dc-odds">${m.bestOdds.toFixed(2)} @ ${m.bestBk}</div>
+        <div class="dc-odds">${m.bestOdds.toFixed(2)} @ ${m.bestBk}${m.bestBkSwedish===false?'<span style="color:var(--yellow-bright);font-size:0.68rem"> ⚠️ej SE</span>':''}</div>
         ${verdict === 'play' ? `<div class="dc-kelly" style="color:var(--green-bright)">~${kellyKr.toLocaleString('sv-SE')} kr</div>` : ''}
       </div>
     </div>
