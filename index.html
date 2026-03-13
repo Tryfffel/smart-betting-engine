@@ -222,26 +222,36 @@ const S = {
 // STATE
 // ============================================================
 let state = {
-  oddsKey:      S.get('sbe_oddsKey', ''),
-  footballKey:  S.get('sbe_footballKey', ''),
-  bankroll:     S.get('sbe_bankroll', 10000),
+  oddsKey:       S.get('sbe_oddsKey', ''),
+  footballKey:   S.get('sbe_footballKey', ''),
+  bankroll:      S.get('sbe_bankroll', 10000),
   activeLeagues: S.get('sbe_leagues', ['eredivisie','championship','allsvenskan']),
-  results:      [],
-  lastScanned:  null,
-  scanning:     false
+  results:       [],
+  lastScanned:   null,
+  scanning:      false
 };
 
 const LEAGUES = {
-  eredivisie:   { key: 'soccer_netherlands_eredivisie',    name: '🇳🇱 Eredivisie',   color: '#f97316' },
-  championship: { key: 'soccer_england_championship',      name: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 Championship', color: '#388bfd' },
-  allsvenskan:  { key: 'soccer_sweden_allsvenskan',        name: '🇸🇪 Allsvenskan',  color: '#e3b341' }
+  eredivisie:   { key: 'soccer_netherlands_eredivisie',  apiId: 88,  name: '🇳🇱 Eredivisie',   color: '#f97316', scandinavian: false },
+  championship: { key: 'soccer_england_championship',    apiId: 40,  name: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 Championship', color: '#388bfd', scandinavian: false },
+  allsvenskan:  { key: 'soccer_sweden_allsvenskan',      apiId: 113, name: '🇸🇪 Allsvenskan',  color: '#e3b341', scandinavian: true  }
 };
 
 const LEAGUE_AVG = {
-  soccer_netherlands_eredivisie:  3.1,
-  soccer_england_championship:    2.5,
-  soccer_sweden_allsvenskan:      2.8
+  soccer_netherlands_eredivisie: 3.1,
+  soccer_england_championship:   2.5,
+  soccer_sweden_allsvenskan:     2.8
 };
+
+function seasonFor(lgId) {
+  const lg = LEAGUES[lgId];
+  const now = new Date();
+  const yr  = now.getFullYear();
+  // Scandinavian leagues: calendar year (April–November)
+  if (lg?.scandinavian) return yr;
+  // European leagues: season starts July/August
+  return now.getMonth() >= 7 ? yr : yr - 1;
+}
 
 const SWEDISH_BK = ['bet365','unibet','betsson','comeon','come on','betway','pinnacle','888sport','nordicbet','mycasino'];
 function isSwedishBk(t) {
@@ -253,14 +263,17 @@ function isSwedishBk(t) {
 // MATH
 // ============================================================
 const P = {
-  pmf: (k, l) => Math.exp(-l) * Math.pow(l, k) / (k <= 1 ? 1 : Array.from({length:k},(_,i)=>i+1).reduce((a,b)=>a*b,1)),
-  val: (odds, prob) => Math.round((odds * prob - 1) * 1000) / 10,
-  kelly: (odds, prob) => { const b=odds-1,q=1-prob,f=(b*prob-q)/b; return Math.max(0, Math.round(f*1000)/10); }
+  pmf: (k, l) => {
+    let fact = 1; for (let i=2; i<=k; i++) fact*=i;
+    return Math.exp(-l) * Math.pow(l, k) / fact;
+  },
+  val:   (odds, prob) => Math.round((odds * prob - 1) * 1000) / 10,
+  kelly: (odds, prob) => { const b=odds-1, q=1-prob, f=(b*prob-q)/b; return Math.max(0, Math.round(f*1000)/10); }
 };
 
 const DixonColes = {
   rho: 0.13,
-  tau(i,j,lH,lA,r) {
+  tau(i, j, lH, lA, r) {
     if (i===0&&j===0) return 1 - lH*lA*r;
     if (i===1&&j===0) return 1 + lA*r;
     if (i===0&&j===1) return 1 + lH*r;
@@ -278,7 +291,7 @@ const DixonColes = {
   }
 };
 
-// Margin-adjusted consensus from raw 1x2 odds
+// Margin-adjusted consensus from raw 1x2 bookmaker odds
 function consensus(raw1x2) {
   const bks = Object.values(raw1x2);
   if (!bks.length) return null;
@@ -287,8 +300,109 @@ function consensus(raw1x2) {
     const p1=1/r.home, pX=1/r.draw, p2=1/r.away, t=p1+pX+p2;
     sH+=p1/t; sX+=pX/t; sA+=p2/t;
   }
-  const n=bks.length;
+  const n = bks.length;
   return { pH:sH/n, pX:sX/n, pA:sA/n };
+}
+
+// ============================================================
+// TEAM STATS CACHE — persists 24h in localStorage
+// ============================================================
+const TeamStatsCache = {
+  TTL: 24 * 60 * 60 * 1000,
+  _key: (id, season) => `sbe_ts_${id}_${season}`,
+  get(teamId, season) {
+    const d = S.get(this._key(teamId, season));
+    if (!d) return null;
+    if (Date.now() - d.ts > this.TTL) return null;
+    return d.stats;
+  },
+  set(teamId, season, stats) {
+    S.set(this._key(teamId, season), { ts: Date.now(), stats });
+  }
+};
+
+const TeamIdCache = {
+  get(name)     { return S.get('sbe_tid', {})[name.toLowerCase()] || null; },
+  set(name, id) { const a=S.get('sbe_tid',{}); a[name.toLowerCase()]=id; S.set('sbe_tid',a); }
+};
+
+// ============================================================
+// API-FOOTBALL HELPERS
+// ============================================================
+async function apifootball(path) {
+  if (!state.footballKey) return null;
+  const ctrl = new AbortController();
+  const tid  = setTimeout(() => ctrl.abort(), 12000);
+  try {
+    const r = await fetch(`https://v3.football.api-sports.io${path}`, {
+      headers: { 'x-apisports-key': state.footballKey },
+      signal: ctrl.signal
+    }).finally(() => clearTimeout(tid));
+    if (!r.ok) return null;
+    return await r.json();
+  } catch { return null; }
+}
+
+async function resolveTeamId(teamName, apiLeagueId, season) {
+  const cached = TeamIdCache.get(teamName);
+  if (cached) return cached;
+  // Search within league+season for accuracy
+  const d = await apifootball(`/teams?search=${encodeURIComponent(teamName)}&league=${apiLeagueId}&season=${season}`);
+  const id = d?.response?.[0]?.team?.id || null;
+  if (id) TeamIdCache.set(teamName, id);
+  return id;
+}
+
+// Fetch aggregated team statistics for this season (attack/defense averages)
+async function fetchTeamStatistics(teamId, apiLeagueId, season) {
+  const cached = TeamStatsCache.get(teamId, season);
+  if (cached) return cached;
+  const d = await apifootball(`/teams/statistics?team=${teamId}&league=${apiLeagueId}&season=${season}`);
+  if (!d?.response) return null;
+  const s = d.response;
+  const stats = {
+    homeAvgScored:    parseFloat(s.goals?.for?.average?.home)    || null,
+    homeAvgConceded:  parseFloat(s.goals?.against?.average?.home) || null,
+    awayAvgScored:    parseFloat(s.goals?.for?.average?.away)    || null,
+    awayAvgConceded:  parseFloat(s.goals?.against?.average?.away) || null,
+    totalAvgScored:   parseFloat(s.goals?.for?.average?.total)   || null,
+    totalAvgConceded: parseFloat(s.goals?.against?.average?.total) || null,
+    form:             s.form || '',
+    nGames:           s.fixtures?.played?.total || 0
+  };
+  TeamStatsCache.set(teamId, season, stats);
+  return stats;
+}
+
+// Compute Dixon-Coles lambdas from real team stats
+// homeStats = stats for home team, awayStats = stats for away team
+function computeLambdas(homeStats, awayStats, ligaAvg) {
+  const half = ligaAvg / 2;
+  // Use home-specific averages for home team, away-specific for away team
+  const homeAtk = ((homeStats?.homeAvgScored   ?? homeStats?.totalAvgScored   ?? half)) / half;
+  const homeDef = ((homeStats?.homeAvgConceded  ?? homeStats?.totalAvgConceded ?? half)) / half;
+  const awayAtk = ((awayStats?.awayAvgScored    ?? awayStats?.totalAvgScored   ?? half)) / half;
+  const awayDef = ((awayStats?.awayAvgConceded  ?? awayStats?.totalAvgConceded ?? half)) / half;
+  const lH = Math.max(0.3, homeAtk * awayDef * half);
+  const lA = Math.max(0.3, awayAtk * homeDef * half);
+  return { lH, lA };
+}
+
+// Fallback: estimate lambdas from market consensus (circular, but better than nothing)
+function estimateLambdasFromMarket(cons, ligaAvg) {
+  const half = ligaAvg / 2;
+  const lH = Math.max(0.3, (cons.pH + 0.42 * cons.pX) * ligaAvg * 0.88);
+  const lA = Math.max(0.3, (cons.pA + 0.42 * cons.pX) * ligaAvg * 0.88);
+  return { lH, lA };
+}
+
+// Form string "WWDLW" → multiplier 0.9–1.1
+function formFactor(formStr) {
+  if (!formStr) return 1.0;
+  const last5 = formStr.slice(-5);
+  let pts = 0;
+  for (const c of last5) pts += c==='W'?3:c==='D'?1:0;
+  return 0.9 + (pts / 15) * 0.2; // 0.9 at 0pts, 1.1 at 15pts
 }
 
 // ============================================================
@@ -301,55 +415,82 @@ function makeDecision(valuePct, threshold) {
 }
 
 function confidenceScore(m) {
-  // 0–100 based on: number of bookmakers, value magnitude, how far from 50/50
-  const bkScore = Math.min(m.allBkOdds.length * 15, 45);
+  const bkScore  = Math.min(m.allBkOdds.length * 15, 45);
   const valScore = Math.min(m.valuePct * 3, 35);
-  const oddsScore = m.bestOdds >= 1.4 && m.bestOdds <= 3.5 ? 20 : 10;
-  return Math.round(bkScore + valScore + oddsScore);
+  const oddsScore = m.bestOdds >= 1.4 && m.bestOdds <= 3.5 ? 15 : 8;
+  const dataScore = m.dataSource === 'api-football' ? 5 : 0;
+  return Math.round(bkScore + valScore + oddsScore + dataScore);
 }
 
 function whyText(m) {
-  const dir = m.dcType === '1 (Hemma)' ? 1 : m.dcType === '2 (Borta)' ? -1 : 0;
   const edge = Math.round((m.modelProb - m.impliedProb) * 10) / 10;
   const lines = [];
-  if (Math.abs(edge) > 0) lines.push(`Modellen ser ${edge > 0 ? 'hemmalaget' : 'bortalaget'} ${Math.abs(edge)}pp starkare än marknaden`);
-  if (m.bestOdds >= 2.0) lines.push(`Bra odds ${m.bestOdds.toFixed(2)} ger hög absolut avkastning`);
-  if (m.allBkOdds.length >= 3) lines.push(`${m.allBkOdds.length} spelbolag bekräftar odds`);
-  if (m.allBkOdds.length <= 1) lines.push(`Lågt antal spelbolag — lägre tillförlitlighet`);
+  if (m.dataSource === 'api-football')
+    lines.push(`Modell baserad på faktiska mål per match (${m.homeStats?.nGames||'?'} + ${m.awayStats?.nGames||'?'} matcher)`);
+  else
+    lines.push('⚠️ Estimerade lambdor — lägg till API-Football-nyckel för riktiga data');
+  if (Math.abs(edge) > 0)
+    lines.push(`Dixon-Coles ser ${edge > 0 ? 'hemmalaget' : 'bortalaget'} ${Math.abs(edge)}pp starkare än marknaden`);
+  if (m.lH && m.lA)
+    lines.push(`Förväntade mål: Hemma ${m.lH} xG · Borta ${m.lA} xG`);
+  if (m.bestOdds >= 2.0)
+    lines.push(`Odds ${m.bestOdds.toFixed(2)} ger bra absolut avkastning`);
+  if (m.allBkOdds.length >= 3)
+    lines.push(`${m.allBkOdds.length} spelbolag bekräftar oddslinjen`);
+  if (m.allBkOdds.length <= 1)
+    lines.push('Få spelbolag — lägre tillförlitlighet');
   return lines;
 }
 
 // ============================================================
-// PROCESS GAME
+// PROCESS GAME  (teamStatsMap: { teamName → stats|null })
 // ============================================================
-function processGame(game, leagueName, leagueKey, oddsKey) {
+function processGame(game, leagueName, leagueKey, teamStatsMap) {
   const ligaAvg = LEAGUE_AVG[leagueKey] || 2.6;
   const kickoff = new Date(game.commence_time);
-  const raw1x2 = {};
-  const filtered = (game.bookmakers || []).filter(bk => isSwedishBk(bk.title));
+  const raw1x2  = {};
 
+  const filtered = (game.bookmakers || []).filter(bk => isSwedishBk(bk.title));
   for (const bk of filtered) {
-    const m = bk.markets?.find(m => m.key === 'h2h');
-    if (m) {
-      const h = m.outcomes.find(o => o.name === game.home_team)?.price;
-      const d = m.outcomes.find(o => o.name === 'Draw')?.price;
-      const a = m.outcomes.find(o => o.name === game.away_team)?.price;
+    const mk = bk.markets?.find(m => m.key === 'h2h');
+    if (mk) {
+      const h = mk.outcomes.find(o => o.name === game.home_team)?.price;
+      const d = mk.outcomes.find(o => o.name === 'Draw')?.price;
+      const a = mk.outcomes.find(o => o.name === game.away_team)?.price;
       if (h && d && a) raw1x2[bk.title] = { home: h, draw: d, away: a };
     }
   }
-
   if (!Object.keys(raw1x2).length) return [];
 
   const cons = consensus(raw1x2);
   if (!cons) return [];
 
-  // Dixon-Coles lambdas from consensus implied probs
-  // Simple estimation: use ratio of expected goals
-  const totalGoals = ligaAvg;
-  const homeAdv = 0.35; // home advantage in goals
-  const lH = Math.max(0.3, (cons.pH + 0.5 * cons.pX) * totalGoals * (1 + homeAdv));
-  const lA = Math.max(0.3, (cons.pA + 0.5 * cons.pX) * totalGoals * (1 - homeAdv * 0.5));
+  // ── Dixon-Coles lambdas ──────────────────────────────────
+  const homeStats = teamStatsMap?.[game.home_team] || null;
+  const awayStats = teamStatsMap?.[game.away_team] || null;
+  let lH, lA, dataSource;
+
+  if (homeStats && awayStats) {
+    // Real data: use team-specific attack/defense ratings
+    const base = computeLambdas(homeStats, awayStats, ligaAvg);
+    // Apply form factor (recent momentum)
+    const ffH = formFactor(homeStats.form);
+    const ffA = formFactor(awayStats.form);
+    lH = Math.max(0.3, base.lH * ffH);
+    lA = Math.max(0.3, base.lA * ffA);
+    dataSource = 'api-football';
+  } else {
+    const est = estimateLambdasFromMarket(cons, ligaAvg);
+    lH = est.lH; lA = est.lA;
+    dataSource = 'market-estimate';
+  }
+
   const dc = DixonColes.probs(lH, lA);
+
+  // ── Market implied probs (for edge comparison) ───────────
+  const mktPH = Math.round(cons.pH * 1000) / 10;
+  const mktPX = Math.round(cons.pX * 1000) / 10;
+  const mktPA = Math.round(cons.pA * 1000) / 10;
 
   const results = [];
   const mkBk = (fn, min, max) => Object.keys(raw1x2).map(bk => {
@@ -357,62 +498,78 @@ function processGame(game, leagueName, leagueKey, oddsKey) {
     return o && o >= min && o <= max ? { bk, odds: o } : null;
   }).filter(Boolean);
 
-  const push = (dcType, prob, bkOdds) => {
+  const push = (dcType, prob, bkOdds, mktProb) => {
     if (!bkOdds.length) return;
     const best = bkOdds.reduce((a, b) => b.odds > a.odds ? b : a);
-    const vp = P.val(best.odds, prob);
-    const impliedProb = Math.round((1 / best.odds) * 1000) / 10;
+    const vp    = P.val(best.odds, prob);
     const kelly = P.kelly(best.odds, prob);
     results.push({
       gameId: game.id, homeTeam: game.home_team, awayTeam: game.away_team,
-      leagueName, leagueKey, kickoff,
+      leagueName, leagueKey, kickoff, dataSource,
+      homeStats, awayStats,
       dcType, bestOdds: best.odds, bestBk: best.bk,
-      valuePct: vp,
-      modelProb: Math.round(prob * 1000) / 10,
-      impliedProb,
-      kellyPct: kelly,
-      lH: Math.round(lH * 100) / 100, lA: Math.round(lA * 100) / 100,
+      valuePct:    vp,
+      modelProb:   Math.round(prob * 1000) / 10,
+      impliedProb: Math.round((mktProb ?? (1/best.odds)) * 1000) / 10,
+      kellyPct:    kelly,
+      lH: Math.round(lH * 100) / 100,
+      lA: Math.round(lA * 100) / 100,
       pH: Math.round(dc.pH * 1000) / 10,
       pX: Math.round(dc.pX * 1000) / 10,
       pA: Math.round(dc.pA * 1000) / 10,
+      mktPH, mktPX, mktPA,
       allBkOdds: bkOdds,
       fetchedAt: new Date()
     });
   };
 
-  push('1 (Hemma)',    dc.pH, mkBk(r => r.home, 1.15, 6.0));
-  push('X (Oavgjort)', dc.pX, mkBk(r => r.draw, 1.15, 6.0));
-  push('2 (Borta)',    dc.pA, mkBk(r => r.away, 1.15, 6.0));
-
-  // Double chance
-  push('1X (DC)', dc.pH + dc.pX, mkBk(r => {
+  push('1 (Hemma)',    dc.pH, mkBk(r => r.home, 1.15, 6.0), cons.pH);
+  push('X (Oavgjort)', dc.pX, mkBk(r => r.draw, 1.15, 6.0), cons.pX);
+  push('2 (Borta)',    dc.pA, mkBk(r => r.away, 1.15, 6.0), cons.pA);
+  push('1X (DC)', dc.pH+dc.pX, mkBk(r => {
     const p1=1/r.home,pX=1/r.draw,p2=1/r.away,t=p1+pX+p2; return 1/((p1/t+pX/t));
-  }, 1.05, 3.0));
-  push('X2 (DC)', dc.pX + dc.pA, mkBk(r => {
+  }, 1.05, 3.0), cons.pH+cons.pX);
+  push('X2 (DC)', dc.pX+dc.pA, mkBk(r => {
     const p1=1/r.home,pX=1/r.draw,p2=1/r.away,t=p1+pX+p2; return 1/((pX/t+p2/t));
-  }, 1.05, 3.0));
+  }, 1.05, 3.0), cons.pX+cons.pA);
 
   return results;
 }
 
 // ============================================================
-// API FETCH
+// ODDS API FETCH
 // ============================================================
-async function fetchLeague(leagueKey) {
-  const key = state.oddsKey;
-  const url = `https://api.the-odds-api.com/v4/sports/${leagueKey}/odds/?apiKey=${key}&regions=eu&markets=h2h&oddsFormat=decimal`;
+async function fetchLeagueOdds(leagueKey) {
+  const url = `https://api.the-odds-api.com/v4/sports/${leagueKey}/odds/?apiKey=${state.oddsKey}&regions=eu&markets=h2h&oddsFormat=decimal`;
   const ctrl = new AbortController();
-  const tid = setTimeout(() => ctrl.abort(), 15000);
+  const tid  = setTimeout(() => ctrl.abort(), 15000);
   try {
     const r = await fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(tid));
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const rem = r.headers.get('x-requests-remaining');
-    if (rem !== null) document.getElementById('lastUpdated').textContent += ` · Requests kvar: ${rem}`;
+    if (rem !== null) setStatus(`Requests kvar: ${rem}`);
     return await r.json();
-  } catch (e) {
-    console.warn(`Fel för ${leagueKey}:`, e);
-    return [];
+  } catch (e) { console.warn(`Odds API fel (${leagueKey}):`, e); return []; }
+}
+
+// Pre-fetch all team stats for a list of team names in a given league
+async function prefetchTeamStats(teamNames, lgId, teamStatsMap) {
+  const lg     = LEAGUES[lgId];
+  const season = seasonFor(lgId);
+  let fetched  = 0;
+  for (const name of teamNames) {
+    const teamId = await resolveTeamId(name, lg.apiId, season);
+    if (!teamId) { teamStatsMap[name] = null; continue; }
+    const stats = await fetchTeamStatistics(teamId, lg.apiId, season);
+    teamStatsMap[name] = stats;
+    fetched++;
   }
+  return fetched;
+}
+
+function setStatus(msg) {
+  const el = document.getElementById('lastUpdated');
+  if (el) el.textContent = (el.textContent.split('·')[0]).trim() + (msg ? ' · ' + msg : '');
 }
 
 // ============================================================
@@ -426,37 +583,55 @@ async function runScan() {
   const btn = document.getElementById('scanBtn');
   btn.disabled = true;
   btn.innerHTML = '<div class="spinner"></div> Skannar...';
-  document.getElementById('decisionList').innerHTML = '<div class="loading-state"><div class="spinner"></div><span>Hämtar odds från ' + state.activeLeagues.length + ' ligor...</span></div>';
+  document.getElementById('decisionList').innerHTML =
+    '<div class="loading-state"><div class="spinner"></div><span id="scanStatus">Hämtar odds...</span></div>';
 
+  const setScanStatus = t => { const el=document.getElementById('scanStatus'); if(el) el.textContent=t; };
+
+  // ── Step 1: Fetch odds for all active leagues ────────────
+  const gamesByLeague = {};
+  for (const lgId of state.activeLeagues) {
+    setScanStatus(`Hämtar odds: ${LEAGUES[lgId].name}...`);
+    gamesByLeague[lgId] = await fetchLeagueOdds(LEAGUES[lgId].key);
+  }
+
+  // ── Step 2: Pre-fetch team stats via API-Football ─────────
+  const teamStatsMap = {}; // teamName → stats
+  if (state.footballKey) {
+    for (const lgId of state.activeLeagues) {
+      const games = gamesByLeague[lgId] || [];
+      const teams = [...new Set(games.flatMap(g => [g.home_team, g.away_team]))];
+      setScanStatus(`Hämtar lagdata (${LEAGUES[lgId].name}): ${teams.length} lag...`);
+      await prefetchTeamStats(teams, lgId, teamStatsMap);
+    }
+    const loaded = Object.values(teamStatsMap).filter(Boolean).length;
+    setScanStatus(`Lagdata klar: ${loaded} lag`);
+  } else {
+    setScanStatus('Ingen API-Football-nyckel — använder marknadsestimat');
+  }
+
+  // ── Step 3: Process all games ─────────────────────────────
   const allResults = [];
   for (const lgId of state.activeLeagues) {
     const lg = LEAGUES[lgId];
-    if (!lg) continue;
-    const games = await fetchLeague(lg.key);
-    for (const game of games) {
-      const bets = processGame(game, lg.name, lg.key, state.oddsKey);
+    for (const game of gamesByLeague[lgId] || []) {
+      const bets = processGame(game, lg.name, lg.key, teamStatsMap);
       allResults.push(...bets);
     }
   }
 
-  // Keep only best bet per match (highest value)
-  const byGame = {};
-  for (const r of allResults) {
-    if (!byGame[r.gameId] || r.valuePct > byGame[r.gameId].valuePct) byGame[r.gameId] = r;
-  }
-
-  // Also keep second-best if different market and value > 0
-  const allBets = allResults.filter(r => r.valuePct > 0);
-
-  state.results = allBets.sort((a,b) => b.valuePct - a.valuePct);
+  state.results   = allResults.filter(r => r.valuePct > 0).sort((a,b) => b.valuePct - a.valuePct);
   state.lastScanned = new Date();
+  state.scanning  = false;
+  btn.disabled    = false;
+  btn.innerHTML   = '🔍 Skanna nu';
 
-  state.scanning = false;
-  btn.disabled = false;
-  btn.innerHTML = '🔍 Skanna nu';
+  const dataMode = state.footballKey ? '📡 API-Football' : '🎲 Marknadsestimat';
+  document.getElementById('lastUpdated').textContent =
+    `Senast skannat: ${state.lastScanned.toLocaleTimeString('sv-SE')} · ${dataMode}`;
 
   reRender();
-  showToast(`✅ ${allBets.length} bets analyserade`);
+  showToast(`✅ ${state.results.length} bets analyserade`);
 }
 
 // ============================================================
@@ -542,6 +717,8 @@ function renderCard(m, threshold) {
       <!-- Why box -->
       <div class="why-box">
         <div class="why-title">📊 Analys</div>
+        <div class="why-row"><span>Datakälla</span><span class="why-val">${m.dataSource==='api-football'?'📡 API-Football':'🎲 Marknadsestimat'}</span></div>
+        <div class="why-row"><span>Förv. mål (xG)</span><span class="why-val">H ${m.lH} — B ${m.lA}</span></div>
         <div class="why-row"><span>Modellsannolikhet</span><span class="why-val" style="color:#c9b1ff">${m.modelProb}%</span></div>
         <div class="why-row"><span>Marknadssannolikhet</span><span class="why-val">${m.impliedProb}%</span></div>
         <div class="why-row"><span>Edge</span><span class="why-val ${edge>0?'edge-pos':edge<0?'edge-neg':'edge-neu'}">${edge>0?'+':''}${edge}pp</span></div>
@@ -550,12 +727,31 @@ function renderCard(m, threshold) {
         <div class="why-row"><span>Kelly (halvt)</span><span class="why-val">${(m.kellyPct*0.5).toFixed(1)}% → ${kellyKr.toLocaleString('sv-SE')} kr</span></div>
         <div class="why-row"><span>Konfidenspoäng</span><span class="why-val">${conf}/100</span></div>
       </div>
-      <!-- Probability breakdown -->
+      <!-- Probability breakdown: model vs market -->
+      <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Sannolikheter: Modell vs Marknad</div>
       <div class="prob-grid">
-        <div class="prob-box"><div class="pb-lbl">Hemma</div><div class="pb-model">${m.pH}%</div><div class="pb-mkt">${(100/(Object.values({...(m.allBkOdds.reduce((a,b)=>({...a,[b.bk]:b.odds}),{})))}).reduce((s,o)=>s+1/o,0)/m.allBkOdds.length*100||0).toFixed(0)}%</div></div>
-        <div class="prob-box"><div class="pb-lbl">Oavgjort</div><div class="pb-model">${m.pX}%</div><div class="pb-mkt">—</div></div>
-        <div class="prob-box"><div class="pb-lbl">Borta</div><div class="pb-model">${m.pA}%</div><div class="pb-mkt">—</div></div>
+        <div class="prob-box"><div class="pb-lbl">Hemma</div><div class="pb-model">${m.pH}%</div><div class="pb-mkt">Mkt: ${m.mktPH}%</div></div>
+        <div class="prob-box"><div class="pb-lbl">Oavgjort</div><div class="pb-model">${m.pX}%</div><div class="pb-mkt">Mkt: ${m.mktPX}%</div></div>
+        <div class="prob-box"><div class="pb-lbl">Borta</div><div class="pb-model">${m.pA}%</div><div class="pb-mkt">Mkt: ${m.mktPA}%</div></div>
       </div>
+      <!-- Team stats summary (if API-Football data) -->
+      ${m.dataSource === 'api-football' && m.homeStats && m.awayStats ? `
+      <div style="background:rgba(56,139,253,0.07);border:1px solid rgba(56,139,253,0.2);border-radius:6px;padding:8px 10px;margin-bottom:10px;font-size:0.78rem">
+        <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px">📡 Lagstatistik (API-Football)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <div><strong style="color:var(--text)">${m.homeTeam}</strong><br>
+            Hemma: ${m.homeStats.homeAvgScored?.toFixed(2)??'?'} gjorda / ${m.homeStats.homeAvgConceded?.toFixed(2)??'?'} insläppta<br>
+            Form: <span style="letter-spacing:0.1em">${(m.homeStats.form||'').slice(-5).split('').map(c=>c==='W'?'<span style="color:var(--green-bright)">W</span>':c==='D'?'<span style="color:var(--yellow-bright)">D</span>':'<span style="color:#ff7b72">L</span>').join('')}</span>
+          </div>
+          <div><strong style="color:var(--text)">${m.awayTeam}</strong><br>
+            Borta: ${m.awayStats.awayAvgScored?.toFixed(2)??'?'} gjorda / ${m.awayStats.awayAvgConceded?.toFixed(2)??'?'} insläppta<br>
+            Form: <span style="letter-spacing:0.1em">${(m.awayStats.form||'').slice(-5).split('').map(c=>c==='W'?'<span style="color:var(--green-bright)">W</span>':c==='D'?'<span style="color:var(--yellow-bright)">D</span>':'<span style="color:#ff7b72">L</span>').join('')}</span>
+          </div>
+        </div>
+      </div>` : m.dataSource === 'market-estimate' ? `
+      <div style="background:rgba(218,54,51,0.07);border:1px solid rgba(218,54,51,0.2);border-radius:6px;padding:7px 10px;margin-bottom:10px;font-size:0.75rem;color:var(--text-muted)">
+        ⚠️ Lambdor estimerade från marknadsoddsen. Lägg till API-Football-nyckel för riktiga lagdata.
+      </div>` : ''}
       <!-- Why reasons -->
       ${whys.length ? `<div style="margin-bottom:10px">${whys.map(w=>`<div style="font-size:0.8rem;color:var(--text-muted);padding:2px 0">• ${w}</div>`).join('')}</div>` : ''}
       <!-- Bookmakers -->
