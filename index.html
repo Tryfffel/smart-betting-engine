@@ -175,7 +175,9 @@
     </div>
     <div class="setup-row">
       <label>API-Football-nyckel <span style="color:var(--text-muted);font-size:0.75rem">(valfritt)</span></label>
-      <input type="password" id="footballKey" placeholder="För skadedata..." />
+      <input type="password" id="footballKey" placeholder="För lagstatistik..." />
+      <button class="btn btn-sm" onclick="testFootballKey()" id="testFbBtn">Testa</button>
+      <span id="fbKeyStatus" style="font-size:0.78rem"></span>
     </div>
     <div class="setup-row">
       <label>Bankroll (kr)</label>
@@ -1102,6 +1104,35 @@ function showToast(msg, type='success') {
   t.style.borderColor = type === 'error' ? 'var(--red)' : 'var(--green-bright)';
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+async function testFootballKey() {
+  const key = document.getElementById('footballKey').value.trim();
+  const btn = document.getElementById('testFbBtn');
+  const status = document.getElementById('fbKeyStatus');
+  if (!key) { status.textContent = '⚠️ Ange nyckel först'; status.style.color='var(--yellow-bright)'; return; }
+  btn.disabled = true; btn.textContent = '...';
+  status.textContent = 'Testar...'; status.style.color='var(--text-muted)';
+  try {
+    const r = await fetch('https://v3.football.api-sports.io/status', {
+      headers: { 'x-apisports-key': key },
+      signal: AbortSignal.timeout(8000)
+    });
+    const d = await r.json();
+    const used = d?.response?.requests?.current ?? '?';
+    const limit = d?.response?.requests?.limit_day ?? '?';
+    if (r.ok && d?.response) {
+      status.textContent = `✅ Fungerar! ${used}/${limit} anrop idag`;
+      status.style.color = 'var(--green-bright)';
+    } else {
+      status.textContent = '❌ Ogiltig nyckel';
+      status.style.color = '#ff7b72';
+    }
+  } catch(e) {
+    status.textContent = '❌ Nätverksfel';
+    status.style.color = '#ff7b72';
+  }
+  btn.disabled = false; btn.textContent = 'Testa';
 }
 
 function saveKeys() {
