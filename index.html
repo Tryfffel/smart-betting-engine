@@ -136,6 +136,11 @@
   .threshold-row .val { color: var(--green-bright); font-weight: 700; min-width: 36px; }
 
   .last-updated { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 16px; }
+
+  .betlog-section { margin-top: 36px; border-top: 1px solid var(--border); padding-top: 20px; }
+  .betlog-toggle { display: flex; align-items: center; justify-content: space-between; cursor: pointer; margin-bottom: 14px; }
+  .betlog-toggle h2 { font-size: 0.95rem; font-weight: 700; }
+  .badge-red { background: rgba(218,54,51,0.18); color: #ff7b72; border: 1px solid rgba(218,54,51,0.4); }
 </style>
 </head>
 <body>
@@ -205,6 +210,18 @@
     </div>
   </div>
 
+  <!-- Bet log -->
+  <div class="betlog-section">
+    <div class="betlog-toggle" onclick="document.getElementById('betLogBody').classList.toggle('hidden')">
+      <h2>📝 Betlogg &amp; CLV-tracking</h2>
+      <span style="font-size:0.75rem;color:var(--text-muted)">klicka för att visa/dölja ▾</span>
+    </div>
+    <div id="betLogBody">
+      <div id="betLogStats"></div>
+      <div id="betLogContent"><div style="color:var(--text-muted);font-size:0.85rem">Inga loggade bet ännu.</div></div>
+    </div>
+  </div>
+
 </div>
 
 <div class="toast" id="toast"></div>
@@ -227,6 +244,7 @@ let state = {
   bankroll:      S.get('sbe_bankroll', 10000),
   activeLeagues: S.get('sbe_leagues', ['eredivisie','championship','allsvenskan']),
   results:       [],
+  betLog:        S.get('sbe_betlog', []),
   lastScanned:   null,
   scanning:      false
 };
@@ -291,17 +309,23 @@ const DixonColes = {
   }
 };
 
-// Margin-adjusted consensus from raw 1x2 bookmaker odds
+// Pinnacle is a sharp book — weight it 3x in consensus calculation
+function bkWeight(name) {
+  return name.toLowerCase().includes('pinnacle') ? 3 : 1;
+}
+function isPinnacle(name) { return name.toLowerCase().includes('pinnacle'); }
+
+// Margin-adjusted, Pinnacle-weighted consensus from raw 1x2 bookmaker odds
 function consensus(raw1x2) {
-  const bks = Object.values(raw1x2);
-  if (!bks.length) return null;
-  let sH=0,sX=0,sA=0;
-  for (const r of bks) {
+  const entries = Object.entries(raw1x2);
+  if (!entries.length) return null;
+  let sH=0, sX=0, sA=0, totalW=0;
+  for (const [bkName, r] of entries) {
+    const w = bkWeight(bkName);
     const p1=1/r.home, pX=1/r.draw, p2=1/r.away, t=p1+pX+p2;
-    sH+=p1/t; sX+=pX/t; sA+=p2/t;
+    sH+=p1/t*w; sX+=pX/t*w; sA+=p2/t*w; totalW+=w;
   }
-  const n = bks.length;
-  return { pH:sH/n, pX:sX/n, pA:sA/n };
+  return { pH:sH/totalW, pX:sX/totalW, pA:sA/totalW };
 }
 
 // ============================================================
@@ -408,9 +432,10 @@ function formFactor(formStr) {
 // ============================================================
 // DECISION LOGIC
 // ============================================================
-function makeDecision(valuePct, threshold) {
-  if (valuePct >= threshold)   return 'play';
-  if (valuePct >= threshold/2) return 'watch';
+function makeDecision(valuePct, threshold, numBk) {
+  // Require at least 2 bookmakers confirming the line before recommending SPELA
+  if (valuePct >= threshold && numBk >= 2) return 'play';
+  if (valuePct >= threshold/2)             return 'watch';
   return 'skip';
 }
 
@@ -622,6 +647,7 @@ async function runScan() {
 
   state.results   = allResults.filter(r => r.valuePct > 0).sort((a,b) => b.valuePct - a.valuePct);
   state.lastScanned = new Date();
+  updateCLVs(); // auto-update CLV for all logged bets
   state.scanning  = false;
   btn.disabled    = false;
   btn.innerHTML   = '🔍 Skanna nu';
@@ -646,9 +672,9 @@ function reRender() {
     Object.entries(LEAGUES).find(([,v]) => v.key === r.leagueKey)?.[0]
   ));
 
-  const plays  = filtered.filter(r => makeDecision(r.valuePct, threshold) === 'play');
-  const watches = filtered.filter(r => makeDecision(r.valuePct, threshold) === 'watch');
-  const skips  = filtered.filter(r => makeDecision(r.valuePct, threshold) === 'skip');
+  const plays  = filtered.filter(r => makeDecision(r.valuePct, threshold, r.allBkOdds.length) === 'play');
+  const watches = filtered.filter(r => makeDecision(r.valuePct, threshold, r.allBkOdds.length) === 'watch');
+  const skips  = filtered.filter(r => makeDecision(r.valuePct, threshold, r.allBkOdds.length) === 'skip');
 
   document.getElementById('s-play').textContent  = plays.length;
   document.getElementById('s-watch').textContent = watches.length;
@@ -679,10 +705,12 @@ function reRender() {
     + renderSection('🟡 BEVAKA — potentiellt värde', watches)
     + (skips.length ? `<div class="section-title">⛔ HOPPA — ${skips.length} matcher utan värde</div>
     <div class="decision-list">${skips.map(m => renderCard(m, threshold)).join('')}</div>` : '');
+
+  renderBetLog();
 }
 
 function renderCard(m, threshold) {
-  const verdict = makeDecision(m.valuePct, threshold);
+  const verdict = makeDecision(m.valuePct, threshold, m.allBkOdds.length);
   const conf = confidenceScore(m);
   const kellyKr = Math.round(state.bankroll * (m.kellyPct / 100) * 0.5); // half Kelly
   const whys = whyText(m);
@@ -754,16 +782,29 @@ function renderCard(m, threshold) {
       </div>` : ''}
       <!-- Why reasons -->
       ${whys.length ? `<div style="margin-bottom:10px">${whys.map(w=>`<div style="font-size:0.8rem;color:var(--text-muted);padding:2px 0">• ${w}</div>`).join('')}</div>` : ''}
+      <!-- Pinnacle recommendation -->
+      ${(()=>{
+        const pin = m.allBkOdds.find(b => isPinnacle(b.bk));
+        if (pin) return `<div style="background:rgba(46,160,67,0.1);border:1px solid rgba(46,160,67,0.35);border-radius:6px;padding:8px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:0.82rem;font-weight:700;color:var(--green-bright)">⭐ Spela på Pinnacle</span>
+          <span style="font-size:1rem;font-weight:800;color:var(--green-bright)">${pin.odds.toFixed(2)}</span>
+        </div>`;
+        return `<div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:8px">⚠️ Pinnacle saknas — sätt dit bort på ${m.bestBk}</div>`;
+      })()}
       <!-- Bookmakers -->
-      <div style="margin-bottom:4px;font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em">Spelbolag</div>
+      <div style="margin-bottom:4px;font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em">Alla spelbolag</div>
       ${m.allBkOdds.sort((a,b)=>b.odds-a.odds).map(bk=>`
-        <div class="bk-row"><span>${bk.bk}</span><span class="${bk.odds===m.bestOdds?'bk-best':''}">${bk.odds.toFixed(2)}</span></div>
+        <div class="bk-row">
+          <span>${isPinnacle(bk.bk)?'⭐ ':''}<span style="${isPinnacle(bk.bk)?'color:var(--green-bright);font-weight:700':''}">${bk.bk}</span></span>
+          <span class="${bk.odds===m.bestOdds?'bk-best':''}">${bk.odds.toFixed(2)}</span>
+        </div>
       `).join('')}
       <!-- Confidence bar -->
       <div class="confidence-bar" style="margin-top:10px">
         <div class="confidence-fill" style="width:${conf}%;background:${conf>=70?'var(--green-bright)':conf>=50?'var(--yellow-bright)':'var(--text-muted)'}"></div>
       </div>
-      <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px">Konfidenspoäng: ${conf}/100</div>
+      <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px;margin-bottom:10px">Konfidenspoäng: ${conf}/100</div>
+      ${verdict==='play'?`<button class="btn btn-green btn-sm" style="width:100%" onclick="logBet('${m.gameId}','${m.dcType.replace(/'/g,'')}')">📝 Logga bet</button>`:''}
     </div>
   </div>`;
 }
@@ -778,6 +819,124 @@ function fmtTime(d) {
   const dt = new Date(d);
   return dt.toLocaleDateString('sv-SE', { weekday:'short', month:'short', day:'numeric' })
     + ' ' + dt.toLocaleTimeString('sv-SE', { hour:'2-digit', minute:'2-digit' });
+}
+
+// ============================================================
+// BET LOG — CLV tracking
+// ============================================================
+function logBet(gameId, dcType) {
+  const m = state.results.find(r => r.gameId === gameId && r.dcType === dcType);
+  if (!m) return;
+  if (state.betLog.find(b => b.id === gameId + '_' + dcType)) {
+    showToast('Redan loggad!', 'warning'); return;
+  }
+  const pin = m.allBkOdds.find(b => isPinnacle(b.bk));
+  state.betLog.unshift({
+    id:          gameId + '_' + dcType,
+    gameId, homeTeam: m.homeTeam, awayTeam: m.awayTeam,
+    leagueName:  m.leagueName,
+    dcType,
+    odds:        pin ? pin.odds : m.bestOdds,
+    bookmaker:   pin ? pin.bk   : m.bestBk,
+    modelProb:   m.modelProb,
+    valuePct:    m.valuePct,
+    kickoff:     m.kickoff instanceof Date ? m.kickoff.toISOString() : m.kickoff,
+    loggedAt:    new Date().toISOString(),
+    clv:         null,   // closing line value — updated on next scan
+    result:      null    // 'win' | 'loss' | 'void' — set manually
+  });
+  S.set('sbe_betlog', state.betLog);
+  showToast('📝 Bet loggat!');
+  renderBetLog();
+}
+
+// After each scan, update CLV for unresolved bets still in current results
+function updateCLVs() {
+  let updated = 0;
+  for (const bet of state.betLog) {
+    if (bet.result !== null) continue; // already settled
+    const cur = state.results.find(r => r.gameId === bet.gameId && r.dcType === bet.dcType);
+    if (!cur) continue;
+    const pin = cur.allBkOdds.find(b => isPinnacle(b.bk));
+    const closingOdds = pin ? pin.odds : cur.bestOdds;
+    bet.clv = Math.round((bet.odds / closingOdds - 1) * 1000) / 10;
+    updated++;
+  }
+  if (updated) S.set('sbe_betlog', state.betLog);
+}
+
+function setBetResult(id, result) {
+  const bet = state.betLog.find(b => b.id === id);
+  if (bet) { bet.result = result; S.set('sbe_betlog', state.betLog); renderBetLog(); }
+}
+
+function deleteBet(id) {
+  state.betLog = state.betLog.filter(b => b.id !== id);
+  S.set('sbe_betlog', state.betLog);
+  renderBetLog();
+}
+
+function renderBetLog() {
+  const el = document.getElementById('betLogContent');
+  if (!el) return;
+  if (!state.betLog.length) {
+    el.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;padding:16px 0">Inga loggade bet ännu. Klicka på 📝 Logga bet på ett SPELA-kort.</div>';
+    renderBetStats();
+    return;
+  }
+  el.innerHTML = state.betLog.map(b => {
+    const clvColor = b.clv === null ? 'var(--text-muted)' : b.clv >= 0 ? 'var(--green-bright)' : '#ff7b72';
+    const clvStr   = b.clv === null ? '—' : (b.clv > 0 ? '+' : '') + b.clv + '%';
+    return `<div style="background:var(--surface2);border-radius:8px;padding:12px 14px;margin-bottom:8px;border:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">
+        <div>
+          <div style="font-weight:700;font-size:0.9rem">${b.homeTeam} vs ${b.awayTeam}</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px">${b.leagueName} · ${b.dcType} · ${new Date(b.kickoff).toLocaleDateString('sv-SE')}</div>
+          <div style="font-size:0.78rem;margin-top:4px">
+            <span style="color:var(--blue-bright);font-weight:700">${b.odds.toFixed(2)}</span>
+            <span style="color:var(--text-muted)"> @ ${b.bookmaker}</span>
+            &nbsp;|&nbsp;Modell: <span style="color:#c9b1ff">${b.modelProb}%</span>
+            &nbsp;|&nbsp;Value: <span style="color:var(--green-bright)">+${b.valuePct}%</span>
+          </div>
+          <div style="font-size:0.78rem;margin-top:3px">CLV: <strong style="color:${clvColor}">${clvStr}</strong> <span style="color:var(--text-muted);font-size:0.72rem">(uppdateras vid nästa skanning)</span></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+          ${b.result === null
+            ? `<div style="display:flex;gap:5px">
+                <button class="btn btn-sm" style="background:rgba(46,160,67,0.2);border-color:var(--green-bright);color:var(--green-bright)" onclick="setBetResult('${b.id}','win')">✅ Vann</button>
+                <button class="btn btn-sm" style="background:rgba(218,54,51,0.2);border-color:#ff7b72;color:#ff7b72" onclick="setBetResult('${b.id}','loss')">❌ Förlust</button>
+                <button class="btn btn-sm" style="color:var(--text-muted)" onclick="setBetResult('${b.id}','void')">↩ Void</button>
+               </div>`
+            : `<span class="badge ${b.result==='win'?'badge-green':b.result==='loss'?'badge-red':'badge-gray'}">${b.result==='win'?'✅ Vann':b.result==='loss'?'❌ Förlust':'↩ Void'}</span>`
+          }
+          <button class="btn btn-sm" style="color:#ff7b72;font-size:0.72rem" onclick="deleteBet('${b.id}')">Ta bort</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  renderBetStats();
+}
+
+function renderBetStats() {
+  const el = document.getElementById('betLogStats');
+  if (!el || !state.betLog.length) { if(el) el.innerHTML=''; return; }
+  const settled = state.betLog.filter(b => b.result === 'win' || b.result === 'loss');
+  const wins    = settled.filter(b => b.result === 'win');
+  const withCLV = state.betLog.filter(b => b.clv !== null);
+  const avgCLV  = withCLV.length ? (withCLV.reduce((s,b)=>s+b.clv,0)/withCLV.length).toFixed(1) : null;
+  const posCLV  = withCLV.filter(b => b.clv > 0).length;
+  const roi = settled.length ? (() => {
+    let profit = 0;
+    for (const b of settled) profit += b.result==='win' ? (b.odds-1) : -1;
+    return Math.round(profit / settled.length * 100) / 1;
+  })() : null;
+  el.innerHTML = `
+    <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:0.82rem;margin-bottom:12px;padding:10px 14px;background:var(--surface2);border-radius:8px">
+      <span>Loggade: <strong>${state.betLog.length}</strong></span>
+      ${settled.length ? `<span>Träff: <strong style="color:var(--green-bright)">${Math.round(wins.length/settled.length*100)}%</strong> (${wins.length}/${settled.length})</span>` : ''}
+      ${roi !== null ? `<span>ROI: <strong style="color:${roi>=0?'var(--green-bright)':'#ff7b72'}">${roi>=0?'+':''}${roi}%</strong></span>` : ''}
+      ${avgCLV !== null ? `<span>Snitt CLV: <strong style="color:${parseFloat(avgCLV)>=0?'var(--green-bright)':'#ff7b72'}">${parseFloat(avgCLV)>=0?'+':''}${avgCLV}%</strong> (${posCLV}/${withCLV.length} positiva)</span>` : ''}
+    </div>`;
 }
 
 function toggleLeague(id) {
@@ -821,6 +980,7 @@ function saveKeys() {
     if (pill) pill.classList.toggle('active', state.activeLeagues.includes(id));
   }
   if (!state.oddsKey) document.getElementById('setupBanner').style.borderColor = 'rgba(218,54,51,0.5)';
+  renderBetLog();
 })();
 </script>
 </body>
