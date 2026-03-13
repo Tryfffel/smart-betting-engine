@@ -248,7 +248,14 @@ let state = {
   oddsKey:       S.get('sbe_oddsKey', ''),
   footballKey:   S.get('sbe_footballKey', ''),
   bankroll:      S.get('sbe_bankroll', 10000),
-  activeLeagues: S.get('sbe_leagues', ['eredivisie','championship','allsvenskan','bundesliga','superliga']),
+  activeLeagues: (() => {
+    const ALL = ['eredivisie','championship','allsvenskan','bundesliga','superliga'];
+    const saved = S.get('sbe_leagues', ALL);
+    // Always add any new leagues not yet in saved list
+    const merged = [...new Set([...saved, ...ALL])];
+    S.set('sbe_leagues', merged);
+    return merged;
+  })(),
   results:       [],
   betLog:        S.get('sbe_betlog', []),
   lastScanned:   null,
