@@ -1122,7 +1122,10 @@ async function testFootballKey() {
     const used = d?.response?.requests?.current ?? '?';
     const limit = d?.response?.requests?.limit_day ?? '?';
     if (r.ok && d?.response) {
-      status.textContent = `✅ Fungerar! ${used}/${limit} anrop idag`;
+      // Auto-save the key on successful test
+      state.footballKey = key;
+      S.set('sbe_footballKey', key);
+      status.textContent = `✅ Sparad! ${used}/${limit} anrop idag`;
       status.style.color = 'var(--green-bright)';
     } else {
       status.textContent = '❌ Ogiltig nyckel';
