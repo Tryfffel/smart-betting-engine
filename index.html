@@ -47,6 +47,8 @@
   .league-pill.allsvenskan.active { background: rgba(227,179,65,0.25); }
   .league-pill.bundesliga { border-color: #dd0000; color: #dd0000; background: rgba(221,0,0,0.08); }
   .league-pill.bundesliga.active { background: rgba(221,0,0,0.2); }
+  .league-pill.superliga { border-color: #c8102e; color: #c8102e; background: rgba(200,16,46,0.08); }
+  .league-pill.superliga.active { background: rgba(200,16,46,0.2); }
 
   /* Summary strip */
   .summary-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px; }
@@ -183,6 +185,7 @@
     <div class="league-pill championship active" id="pill-championship" onclick="toggleLeague('championship')">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Championship</div>
     <div class="league-pill allsvenskan active" id="pill-allsvenskan" onclick="toggleLeague('allsvenskan')">🇸🇪 Allsvenskan</div>
     <div class="league-pill bundesliga active" id="pill-bundesliga" onclick="toggleLeague('bundesliga')">🇩🇪 Bundesliga</div>
+    <div class="league-pill superliga active" id="pill-superliga" onclick="toggleLeague('superliga')">🇩🇰 Superliga</div>
   </div>
 
   <!-- Threshold -->
@@ -245,7 +248,7 @@ let state = {
   oddsKey:       S.get('sbe_oddsKey', ''),
   footballKey:   S.get('sbe_footballKey', ''),
   bankroll:      S.get('sbe_bankroll', 10000),
-  activeLeagues: S.get('sbe_leagues', ['eredivisie','championship','allsvenskan','bundesliga']),
+  activeLeagues: S.get('sbe_leagues', ['eredivisie','championship','allsvenskan','bundesliga','superliga']),
   results:       [],
   betLog:        S.get('sbe_betlog', []),
   lastScanned:   null,
@@ -256,14 +259,16 @@ const LEAGUES = {
   eredivisie:   { key: 'soccer_netherlands_eredivisie',  apiId: 88,  name: '🇳🇱 Eredivisie',   color: '#f97316', scandinavian: false },
   championship: { key: 'soccer_england_championship',    apiId: 40,  name: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 Championship', color: '#388bfd', scandinavian: false },
   allsvenskan:  { key: 'soccer_sweden_allsvenskan',      apiId: 113, name: '🇸🇪 Allsvenskan',  color: '#e3b341', scandinavian: true  },
-  bundesliga:   { key: 'soccer_germany_bundesliga',      apiId: 78,  name: '🇩🇪 Bundesliga',   color: '#dd0000', scandinavian: false }
+  bundesliga:   { key: 'soccer_germany_bundesliga',      apiId: 78,  name: '🇩🇪 Bundesliga',   color: '#dd0000', scandinavian: false },
+  superliga:    { key: 'soccer_denmark_superliga',        apiId: 119, name: '🇩🇰 Superliga',    color: '#c8102e', scandinavian: true  }
 };
 
 const LEAGUE_AVG = {
   soccer_netherlands_eredivisie: 3.1,
   soccer_england_championship:   2.5,
   soccer_sweden_allsvenskan:     2.8,
-  soccer_germany_bundesliga:     3.1
+  soccer_germany_bundesliga:     3.1,
+  soccer_denmark_superliga:      2.8
 };
 
 function seasonFor(lgId) {
