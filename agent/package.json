@@ -1,0 +1,18 @@
+{
+  "name": "smart-betting-engine-agent",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Reducering.se scraper + Stryktipset/Europatipset reduction-system builder for Smart Betting Engine.",
+  "engines": { "node": ">=18" },
+  "type": "commonjs",
+  "scripts": {
+    "scrape":  "node cli.js scrape",
+    "dossier": "node cli.js dossier",
+    "enrich":  "node cli.js enrich",
+    "build":   "node cli.js build",
+    "all":     "node cli.js all"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0"
+  }
+}

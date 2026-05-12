@@ -1,0 +1,3 @@
+# Output directory for agent artefacts.
+# Populated by `npm run all` (or individual scrape/dossier/enrich/build steps).
+# JSON files here are read by the "Reducering" tab in index.html.
