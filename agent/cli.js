@@ -14,6 +14,7 @@ const { scrapeCurrentRound } = require('./scrape');
 const { buildDossiers } = require('./dossier');
 const { enrichAll } = require('./enrich');
 const { buildByTargetRows, buildByManualMix } = require('./reducer');
+const { runBacktest } = require('./backtest');
 const af = require('./apifootball');
 
 const OUT = path.join(__dirname, 'output');
@@ -23,6 +24,7 @@ const ROUND_FILE    = path.join(OUT, 'round.json');
 const DOSSIER_FILE  = path.join(OUT, 'round-dossier.json');
 const ENRICHED_FILE = path.join(OUT, 'round-enriched.json');
 const SYSTEM_FILE   = path.join(OUT, 'system.json');
+const BACKTEST_FILE = path.join(OUT, 'backtest.json');
 
 // ---------- arg parsing ------------------------------------------------------
 
@@ -129,21 +131,36 @@ async function cmdAll(args) {
   log(`\nDone. API-Football: ${apiStats.calls} live anrop, ${apiStats.cacheHits} cache-hits.`);
 }
 
+async function cmdBacktest(args) {
+  const game = args.game || 'stryktipset';
+  const count = parseInt(args.count || '20', 10);
+  log(`→ Backtestar ${count} omgångar av ${game}…`);
+  const result = await runBacktest({ game, count, log });
+  log(`\n  Resultat (sorterat efter log-loss, lägre = bättre):`);
+  log(`  ${'Strategi'.padEnd(22)} ${'matcher'.padStart(7)}  ${'brier'.padStart(7)}  ${'logloss'.padStart(8)}  ${'träff%'.padStart(7)}`);
+  for (const r of result.results) {
+    log(`  ${r.strategy.padEnd(22)} ${String(r.matches).padStart(7)}  ${String(r.brier).padStart(7)}  ${String(r.logLoss).padStart(8)}  ${(r.hitRate*100).toFixed(1).padStart(6)}%`);
+  }
+  writeJson(BACKTEST_FILE, result);
+  return result;
+}
+
 // ---------- main -------------------------------------------------------------
 
 async function main() {
   const [, , cmd, ...rest] = process.argv;
   const args = parseArgs(rest);
   if (!cmd) {
-    console.log('Usage: node cli.js <scrape|dossier|enrich|build|all> [args]');
+    console.log('Usage: node cli.js <scrape|dossier|enrich|build|all|backtest> [args]');
     process.exit(1);
   }
   try {
     if (cmd === 'scrape')  await cmdScrape(args);
-    else if (cmd === 'dossier') await cmdDossier();
-    else if (cmd === 'enrich')  await cmdEnrich();
-    else if (cmd === 'build')   cmdBuild(args);
-    else if (cmd === 'all')     await cmdAll(args);
+    else if (cmd === 'dossier')  await cmdDossier();
+    else if (cmd === 'enrich')   await cmdEnrich();
+    else if (cmd === 'build')    cmdBuild(args);
+    else if (cmd === 'all')      await cmdAll(args);
+    else if (cmd === 'backtest') await cmdBacktest(args);
     else { console.error(`Unknown command: ${cmd}`); process.exit(1); }
   } catch (e) {
     console.error('✖ ' + e.message);

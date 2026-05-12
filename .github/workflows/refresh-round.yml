@@ -52,6 +52,14 @@ jobs:
           ROWS="${{ github.event.inputs.rows || '100' }}"
           node cli.js all --game "$GAME" --rows "$ROWS"
 
+      - name: Refresh backtest
+        working-directory: agent
+        # Backtest fetches 30 historical draws — past draws are immutable so
+        # the disk cache makes repeated runs nearly free. Failures here
+        # don't block the round refresh.
+        continue-on-error: true
+        run: node cli.js backtest --count 30 --game stryktipset || true
+
       - name: Show output summary
         run: |
           echo "## Output files" >> $GITHUB_STEP_SUMMARY

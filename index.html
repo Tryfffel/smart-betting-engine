@@ -344,6 +344,11 @@
 
     <div class="red-system-out" id="redSystemOut" style="display:none"></div>
 
+    <div class="red-mode-panel" id="redBacktestPanel" style="display:none">
+      <h3>📊 Backtest — vilken strategi är faktiskt bäst?</h3>
+      <div id="redBacktestBody"></div>
+    </div>
+
   </div><!-- /tab-reducering -->
 
 </div>
@@ -376,6 +381,7 @@
 
 <script src="engine/model.js"></script>
 <script src="engine/leagues.js"></script>
+<script src="engine/strategies.js"></script>
 <script>
 // ============================================================
 // STORAGE
@@ -1211,6 +1217,7 @@ async function loadReducering() {
   document.getElementById('redMatchList').innerHTML = '';
   document.getElementById('redStatStrip').innerHTML = '';
   document.getElementById('redSystemOut').style.display = 'none';
+  document.getElementById('redBacktestPanel').style.display = 'none';
   try {
     const r = await fetch('agent/output/round-enriched.json', { cache: 'no-cache' });
     if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -1220,6 +1227,61 @@ async function loadReducering() {
   } catch (e) {
     meta.innerHTML = `❌ Kunde inte ladda enriched-data: ${e.message}.<br><span style="font-size:0.78rem">Kör <code>cd agent && npm run all -- --rows 100</code> i terminalen för att generera <code>agent/output/round-enriched.json</code>.</span>`;
   }
+  loadBacktest();
+}
+
+async function loadBacktest() {
+  try {
+    const r = await fetch('agent/output/backtest.json', { cache: 'no-cache' });
+    if (!r.ok) return;
+    const bt = await r.json();
+    renderBacktest(bt);
+  } catch {}
+}
+
+function renderBacktest(bt) {
+  const panel = document.getElementById('redBacktestPanel');
+  const body  = document.getElementById('redBacktestBody');
+  if (!bt?.results?.length) { panel.style.display = 'none'; return; }
+  panel.style.display = 'block';
+
+  const best = bt.results[0];
+  const baseline = bt.results.find(r => r.strategy === 'streck-leader') || bt.results.find(r => r.strategy === 'streck-raw');
+  const delta = baseline && best.logLoss != null && baseline.logLoss != null
+    ? (baseline.logLoss - best.logLoss).toFixed(3) : null;
+
+  body.innerHTML = `
+    <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:10px">
+      Backtest över <strong style="color:var(--text)">${bt.drawsBacktested}</strong> omgångar
+      (omg ${bt.drawRange?.from}–${bt.drawRange?.to}, ${bt.matchesScored} matcher).
+      Bästa strategi: <strong style="color:var(--green-bright)">${escapeHtml(best.strategy)}</strong>${delta ? ` · ${delta} log-loss bättre än streck-leader baseline` : ''}.
+    </div>
+    <table style="width:100%;font-size:0.82rem;border-collapse:collapse">
+      <thead>
+        <tr style="color:var(--text-muted);text-align:left;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em">
+          <th style="padding:6px 4px">Strategi</th>
+          <th style="padding:6px 4px;text-align:right">Matcher</th>
+          <th style="padding:6px 4px;text-align:right" title="Brier-poäng: lägre = bättre kalibrering">Brier</th>
+          <th style="padding:6px 4px;text-align:right" title="Cross-entropy: lägre = bättre">Log-loss</th>
+          <th style="padding:6px 4px;text-align:right" title="Top-pick träffrate">Träff%</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${bt.results.map((r, i) => `
+          <tr style="border-top:1px solid var(--border);${i===0?'background:rgba(63,185,80,0.07)':''}">
+            <td style="padding:6px 4px;font-weight:${i===0?'700':'500'};${i===0?'color:var(--green-bright)':''}">${i===0?'🏆 ':''}${escapeHtml(r.strategy)}</td>
+            <td style="padding:6px 4px;text-align:right;color:var(--text-muted)">${r.matches}</td>
+            <td style="padding:6px 4px;text-align:right">${r.brier ?? '—'}</td>
+            <td style="padding:6px 4px;text-align:right;font-weight:700">${r.logLoss ?? '—'}</td>
+            <td style="padding:6px 4px;text-align:right">${r.hitRate != null ? (r.hitRate*100).toFixed(1)+'%' : '—'}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+    <div style="font-size:0.72rem;color:var(--text-muted);margin-top:8px">
+      Senast backtestat: ${new Date(bt.backtestedAt).toLocaleString('sv-SE')}.
+      Generera ny: <code>cd agent && node cli.js backtest --count 30</code>
+    </div>
+  `;
 }
 
 function renderReducering() {

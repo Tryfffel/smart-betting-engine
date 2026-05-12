@@ -2,6 +2,7 @@
 // derived from injuries, form, congestion, and head-to-head.
 
 const SBE = require('../engine/model');
+const STR = require('../engine/strategies');
 const { LEAGUE_AVG } = require('../engine/leagues');
 
 const LIGA_AVG_FALLBACK = 2.6;
@@ -80,18 +81,34 @@ function enrichMatch(dossier) {
     }
   }
 
+  // Ensemble with Svenska Spel's bundled odds + bias-corrected streck.
+  // Weights: model (Dixon-Coles or fallback) 50%, odds 35%, streck 15%.
+  // When DC is unavailable, the ensemble leans harder on odds.
+  const modelOnly = { pH, pX, pA };
+  const ensembled = STR.ensemble(
+    { ...match, model: modelOnly },
+    source === 'api-football' ? { wModel: 0.55, wOdds: 0.30, wStreck: 0.15 }
+                              : { wModel: 0.20, wOdds: 0.55, wStreck: 0.25 }
+  );
+  const oddsImpliedProbs = STR.oddsImplied(match);
+  if (oddsImpliedProbs) adjustments.push(
+    `Ensemble: DC ${pH.toFixed(2)}/${pX.toFixed(2)}/${pA.toFixed(2)} blend med odds ${oddsImpliedProbs.pH.toFixed(2)}/${oddsImpliedProbs.pX.toFixed(2)}/${oddsImpliedProbs.pA.toFixed(2)}`
+  );
+
+  const finalP = ensembled;
+
   // Edge versus the crowd (streck)
   const streckP = SBE.probsFromStreck(match.streck);
   const edge = streckP ? {
-    '1': +(pH - streckP.pH).toFixed(3),
-    'X': +(pX - streckP.pX).toFixed(3),
-    '2': +(pA - streckP.pA).toFixed(3)
+    '1': +(finalP.pH - streckP.pH).toFixed(3),
+    'X': +(finalP.pX - streckP.pX).toFixed(3),
+    '2': +(finalP.pA - streckP.pA).toFixed(3)
   } : null;
 
   // Pick the favored outcome
   const pickedOutcome =
-    pH >= pX && pH >= pA ? '1' :
-    pX >= pA              ? 'X' : '2';
+    finalP.pH >= finalP.pX && finalP.pH >= finalP.pA ? '1' :
+    finalP.pX >= finalP.pA                            ? 'X' : '2';
 
   return {
     ...dossier,
@@ -99,9 +116,17 @@ function enrichMatch(dossier) {
       source,
       lH: +lH.toFixed(3),
       lA: +lA.toFixed(3),
-      pH: +pH.toFixed(4),
-      pX: +pX.toFixed(4),
-      pA: +pA.toFixed(4),
+      // Final blended probabilities (used for system building)
+      pH: +finalP.pH.toFixed(4),
+      pX: +finalP.pX.toFixed(4),
+      pA: +finalP.pA.toFixed(4),
+      // Raw Dixon-Coles output before ensembling
+      dcOnly: { pH: +pH.toFixed(4), pX: +pX.toFixed(4), pA: +pA.toFixed(4) },
+      oddsImplied: oddsImpliedProbs ? {
+        pH: +oddsImpliedProbs.pH.toFixed(4),
+        pX: +oddsImpliedProbs.pX.toFixed(4),
+        pA: +oddsImpliedProbs.pA.toFixed(4)
+      } : null,
       adjustments,
       streckP,
       edge,
