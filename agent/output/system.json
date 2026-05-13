@@ -1,0 +1,261 @@
+{
+  "mode": "target-rows",
+  "params": {
+    "maxRows": 100
+  },
+  "totalRows": 81,
+  "cost1kr": 81,
+  "cost2kr": 162,
+  "expectedP13": 0.00173,
+  "counts": {
+    "enkel": 9,
+    "halv": 0,
+    "hel": 4
+  },
+  "picks": [
+    {
+      "idx": 1,
+      "home": "AIK",
+      "away": "Djurgården",
+      "league": "Allsvenskan",
+      "level": "hel",
+      "outcomes": [
+        "1",
+        "X",
+        "2"
+      ],
+      "coveredP": 1,
+      "modelProbs": {
+        "1": 0.3559,
+        "2": 0.3531,
+        "X": 0.291
+      },
+      "reasonNotes": [
+        "Jämn match (topp 36% vs 2:a 35%)",
+        "Jämn match (topp 36% vs 2:a 35%)"
+      ]
+    },
+    {
+      "idx": 2,
+      "home": "IFK Göteborg",
+      "away": "Malmö FF",
+      "league": "Allsvenskan",
+      "level": "hel",
+      "outcomes": [
+        "1",
+        "X",
+        "2"
+      ],
+      "coveredP": 1,
+      "modelProbs": {
+        "1": 0.3918,
+        "2": 0.3368,
+        "X": 0.2714
+      },
+      "reasonNotes": [
+        "Jämn match (topp 39% vs 2:a 34%)",
+        "Jämn match (topp 39% vs 2:a 34%)"
+      ]
+    },
+    {
+      "idx": 3,
+      "home": "Hammarby",
+      "away": "BK Häcken",
+      "league": "Allsvenskan",
+      "level": "enkel",
+      "outcomes": [
+        "1"
+      ],
+      "coveredP": 0.4824,
+      "modelProbs": {
+        "1": 0.4824,
+        "2": 0.254,
+        "X": 0.2636
+      },
+      "reasonNotes": []
+    },
+    {
+      "idx": 4,
+      "home": "Elfsborg",
+      "away": "Mjällby",
+      "league": "Allsvenskan",
+      "level": "enkel",
+      "outcomes": [
+        "1"
+      ],
+      "coveredP": 0.5697,
+      "modelProbs": {
+        "1": 0.5697,
+        "2": 0.1903,
+        "X": 0.24
+      },
+      "reasonNotes": []
+    },
+    {
+      "idx": 5,
+      "home": "Manchester United",
+      "away": "Liverpool",
+      "league": "Premier League",
+      "level": "enkel",
+      "outcomes": [
+        "2"
+      ],
+      "coveredP": 0.4447,
+      "modelProbs": {
+        "1": 0.2821,
+        "2": 0.4447,
+        "X": 0.2732
+      },
+      "reasonNotes": []
+    },
+    {
+      "idx": 6,
+      "home": "Arsenal",
+      "away": "Tottenham",
+      "league": "Premier League",
+      "level": "enkel",
+      "outcomes": [
+        "1"
+      ],
+      "coveredP": 0.5003,
+      "modelProbs": {
+        "1": 0.5003,
+        "2": 0.2399,
+        "X": 0.2598
+      },
+      "reasonNotes": []
+    },
+    {
+      "idx": 7,
+      "home": "Bayern München",
+      "away": "Dortmund",
+      "league": "Bundesliga",
+      "level": "enkel",
+      "outcomes": [
+        "1"
+      ],
+      "coveredP": 0.5267,
+      "modelProbs": {
+        "1": 0.5267,
+        "2": 0.2292,
+        "X": 0.2442
+      },
+      "reasonNotes": []
+    },
+    {
+      "idx": 8,
+      "home": "Real Madrid",
+      "away": "Barcelona",
+      "league": "La Liga",
+      "level": "enkel",
+      "outcomes": [
+        "1"
+      ],
+      "coveredP": 0.4348,
+      "modelProbs": {
+        "1": 0.4348,
+        "2": 0.2982,
+        "X": 0.267
+      },
+      "reasonNotes": []
+    },
+    {
+      "idx": 9,
+      "home": "PSG",
+      "away": "Marseille",
+      "league": "Ligue 1",
+      "level": "enkel",
+      "outcomes": [
+        "1"
+      ],
+      "coveredP": 0.6585,
+      "modelProbs": {
+        "1": 0.6585,
+        "2": 0.136,
+        "X": 0.2055
+      },
+      "reasonNotes": []
+    },
+    {
+      "idx": 10,
+      "home": "Juventus",
+      "away": "Inter",
+      "league": "Serie A",
+      "level": "hel",
+      "outcomes": [
+        "1",
+        "X",
+        "2"
+      ],
+      "coveredP": 1,
+      "modelProbs": {
+        "1": 0.3211,
+        "2": 0.3766,
+        "X": 0.3022
+      },
+      "reasonNotes": [
+        "Jämn match (topp 38% vs 2:a 32%)",
+        "Jämn match (topp 38% vs 2:a 32%)"
+      ]
+    },
+    {
+      "idx": 11,
+      "home": "Norwich",
+      "away": "Leeds",
+      "league": "Championship",
+      "level": "hel",
+      "outcomes": [
+        "1",
+        "X",
+        "2"
+      ],
+      "coveredP": 1,
+      "modelProbs": {
+        "1": 0.369,
+        "2": 0.3397,
+        "X": 0.2913
+      },
+      "reasonNotes": [
+        "Jämn match (topp 37% vs 2:a 34%)",
+        "Jämn match (topp 37% vs 2:a 34%)"
+      ]
+    },
+    {
+      "idx": 12,
+      "home": "Ajax",
+      "away": "PSV",
+      "league": "Eredivisie",
+      "level": "enkel",
+      "outcomes": [
+        "1"
+      ],
+      "coveredP": 0.4087,
+      "modelProbs": {
+        "1": 0.4087,
+        "2": 0.3179,
+        "X": 0.2735
+      },
+      "reasonNotes": []
+    },
+    {
+      "idx": 13,
+      "home": "Köpenhamn",
+      "away": "Midtjylland",
+      "league": "Superliga",
+      "level": "enkel",
+      "outcomes": [
+        "1"
+      ],
+      "coveredP": 0.4591,
+      "modelProbs": {
+        "1": 0.4591,
+        "2": 0.2653,
+        "X": 0.2755
+      },
+      "reasonNotes": []
+    }
+  ],
+  "roundNo": 9999,
+  "game": "stryktipset",
+  "builtAt": "2026-05-13T11:12:03.248Z"
+}

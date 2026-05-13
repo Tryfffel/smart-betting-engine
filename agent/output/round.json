@@ -1,0 +1,258 @@
+{
+  "game": "stryktipset",
+  "roundNo": 9999,
+  "deadline": "2026-05-17T15:59:00+02:00",
+  "productName": "Stryktipset (DEMO)",
+  "fetchedAt": "2026-05-13T11:12:03.242Z",
+  "isDemo": true,
+  "analysesAttached": 6,
+  "matches": [
+    {
+      "idx": 1,
+      "home": "AIK",
+      "away": "Djurgården",
+      "league": "Allsvenskan",
+      "kickoff": "2026-05-17T16:00:00+02:00",
+      "streck": {
+        "1": 35,
+        "2": 35,
+        "X": 30
+      },
+      "sportsbookOdds": {
+        "1": 2.5,
+        "2": 2.7,
+        "X": 3.2
+      },
+      "analys": "Stockholm-derbyt — alltid en mardröm att tippa. Båda lagen har vunnit två av senaste fyra inbördes mötena. AIK saknar två backar pga skador.",
+      "reduceringsTip": "1X"
+    },
+    {
+      "idx": 2,
+      "home": "IFK Göteborg",
+      "away": "Malmö FF",
+      "league": "Allsvenskan",
+      "kickoff": "2026-05-17T18:00:00+02:00",
+      "streck": {
+        "1": 40,
+        "2": 35,
+        "X": 25
+      },
+      "sportsbookOdds": {
+        "1": 2.3,
+        "2": 2.9,
+        "X": 3.4
+      },
+      "analys": "Klassiker. Malmö har vunnit fyra av senaste fem inbördes på Gamla Ullevi.",
+      "reduceringsTip": "X2"
+    },
+    {
+      "idx": 3,
+      "home": "Hammarby",
+      "away": "BK Häcken",
+      "league": "Allsvenskan",
+      "kickoff": "2026-05-17T16:00:00+02:00",
+      "streck": {
+        "1": 50,
+        "2": 25,
+        "X": 25
+      },
+      "sportsbookOdds": {
+        "1": 1.9,
+        "2": 3.8,
+        "X": 3.5
+      },
+      "analys": "Hammarby starka hemma — 2.4 PPG. Häcken inkonsekventa på resa.",
+      "reduceringsTip": "1"
+    },
+    {
+      "idx": 4,
+      "home": "Elfsborg",
+      "away": "Mjällby",
+      "league": "Allsvenskan",
+      "kickoff": "2026-05-17T16:00:00+02:00",
+      "streck": {
+        "1": 60,
+        "2": 18,
+        "X": 22
+      },
+      "sportsbookOdds": {
+        "1": 1.6,
+        "2": 5,
+        "X": 3.8
+      },
+      "analys": "",
+      "reduceringsTip": ""
+    },
+    {
+      "idx": 5,
+      "home": "Manchester United",
+      "away": "Liverpool",
+      "league": "Premier League",
+      "kickoff": "2026-05-17T17:30:00+02:00",
+      "streck": {
+        "1": 28,
+        "2": 44,
+        "X": 28
+      },
+      "sportsbookOdds": {
+        "1": 3.4,
+        "2": 2,
+        "X": 3.5
+      },
+      "analys": "Liverpool i grymform — 5 raka vinster. United har två mittfältare avstängda.",
+      "reduceringsTip": "2"
+    },
+    {
+      "idx": 6,
+      "home": "Arsenal",
+      "away": "Tottenham",
+      "league": "Premier League",
+      "kickoff": "2026-05-17T13:30:00+02:00",
+      "streck": {
+        "1": 52,
+        "2": 23,
+        "X": 25
+      },
+      "sportsbookOdds": {
+        "1": 1.85,
+        "2": 4,
+        "X": 3.6
+      },
+      "analys": "North London-derby. Arsenal favoriter men Spurs har slagit dem två gånger på rad.",
+      "reduceringsTip": "1X"
+    },
+    {
+      "idx": 7,
+      "home": "Bayern München",
+      "away": "Dortmund",
+      "league": "Bundesliga",
+      "kickoff": "2026-05-17T18:30:00+02:00",
+      "streck": {
+        "1": 55,
+        "2": 23,
+        "X": 22
+      },
+      "sportsbookOdds": {
+        "1": 1.75,
+        "2": 4.2,
+        "X": 3.9
+      },
+      "analys": "Der Klassiker. Bayern dominerar hemma — 9 raka vinster på Allianz mot BVB.",
+      "reduceringsTip": "1"
+    },
+    {
+      "idx": 8,
+      "home": "Real Madrid",
+      "away": "Barcelona",
+      "league": "La Liga",
+      "kickoff": "2026-05-17T21:00:00+02:00",
+      "streck": {
+        "1": 45,
+        "2": 30,
+        "X": 25
+      },
+      "sportsbookOdds": {
+        "1": 2.1,
+        "2": 3.2,
+        "X": 3.5
+      },
+      "analys": "El Clásico. Båda har Champions League nästa vecka — risk för rotation.",
+      "reduceringsTip": "X"
+    },
+    {
+      "idx": 9,
+      "home": "PSG",
+      "away": "Marseille",
+      "league": "Ligue 1",
+      "kickoff": "2026-05-17T21:00:00+02:00",
+      "streck": {
+        "1": 70,
+        "2": 12,
+        "X": 18
+      },
+      "sportsbookOdds": {
+        "1": 1.4,
+        "2": 7,
+        "X": 4.5
+      },
+      "analys": "Le Classique. PSG storfavoriter men Marseille brukar leverera överraskningar.",
+      "reduceringsTip": ""
+    },
+    {
+      "idx": 10,
+      "home": "Juventus",
+      "away": "Inter",
+      "league": "Serie A",
+      "kickoff": "2026-05-17T20:45:00+02:00",
+      "streck": {
+        "1": 30,
+        "2": 35,
+        "X": 35
+      },
+      "sportsbookOdds": {
+        "1": 3,
+        "2": 2.5,
+        "X": 3
+      },
+      "analys": "Derby d'Italia — historiskt målsnålt. 0-0 och 1-1 vanligaste resultaten.",
+      "reduceringsTip": "X2"
+    },
+    {
+      "idx": 11,
+      "home": "Norwich",
+      "away": "Leeds",
+      "league": "Championship",
+      "kickoff": "2026-05-17T16:00:00+02:00",
+      "streck": {
+        "1": 38,
+        "2": 32,
+        "X": 30
+      },
+      "sportsbookOdds": {
+        "1": 2.5,
+        "2": 2.7,
+        "X": 3.2
+      },
+      "analys": "",
+      "reduceringsTip": ""
+    },
+    {
+      "idx": 12,
+      "home": "Ajax",
+      "away": "PSV",
+      "league": "Eredivisie",
+      "kickoff": "2026-05-17T14:30:00+02:00",
+      "streck": {
+        "1": 42,
+        "2": 31,
+        "X": 27
+      },
+      "sportsbookOdds": {
+        "1": 2.2,
+        "2": 2.9,
+        "X": 3.4
+      },
+      "analys": "De Klassieker. PSV med 8 raka vinster i ligan.",
+      "reduceringsTip": "2"
+    },
+    {
+      "idx": 13,
+      "home": "Köpenhamn",
+      "away": "Midtjylland",
+      "league": "Superliga",
+      "kickoff": "2026-05-17T16:00:00+02:00",
+      "streck": {
+        "1": 48,
+        "2": 25,
+        "X": 27
+      },
+      "sportsbookOdds": {
+        "1": 2,
+        "2": 3.5,
+        "X": 3.3
+      },
+      "analys": "Köpenhamn vann förra mötet 3-1.",
+      "reduceringsTip": "1"
+    }
+  ]
+}

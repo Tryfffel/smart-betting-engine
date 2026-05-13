@@ -149,6 +149,78 @@
   .graph-wrap { margin-bottom:14px;background:var(--surface2);border-radius:8px;padding:10px 4px 4px;border:1px solid var(--border); }
   .graph-wrap svg { display:block;width:100%;height:auto; }
   .badge-red { background: rgba(218,54,51,0.18); color: #ff7b72; border: 1px solid rgba(218,54,51,0.4); }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 2px; margin-bottom: 22px; background: var(--surface2); padding: 4px; border-radius: 10px; border: 1px solid var(--border); }
+  .tab { flex: 1; background: transparent; border: 0; padding: 9px 12px; border-radius: 7px; color: var(--text-muted); font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+  .tab:hover { color: var(--text); }
+  .tab.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+  .tab-pane.hidden { display: none; }
+
+  /* Reducering view */
+  .red-toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; }
+  .red-toolbar .meta { font-size: 0.85rem; color: var(--text-muted); }
+  .red-toolbar .meta strong { color: var(--text); }
+  .red-stat-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+  @media (max-width: 600px) { .red-stat-strip { grid-template-columns: repeat(2, 1fr); } }
+  .red-mode-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; }
+  .red-mode-panel h3 { font-size: 0.85rem; margin-bottom: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .red-mode-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+  .red-mode-row label { font-size: 0.82rem; color: var(--text-muted); min-width: 90px; }
+  .red-mode-row input[type=number] { width: 70px; background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 6px 8px; border-radius: 6px; font-size: 0.85rem; }
+  .red-mode-row input[type=range] { width: 200px; accent-color: var(--green-bright); }
+
+  .red-match { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; overflow: hidden; transition: border-color 0.15s; }
+  .red-match.gardered { border-left: 4px solid var(--yellow-bright); }
+  .red-match.hel { border-left: 4px solid var(--orange); }
+  .red-match-head { display: grid; grid-template-columns: 28px 1fr auto auto; gap: 12px; align-items: center; padding: 11px 14px; cursor: pointer; }
+  .red-match-head:hover { background: var(--surface2); }
+  .red-idx { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); }
+  .red-teams { font-weight: 700; font-size: 0.95rem; }
+  .red-league-tag { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+  .red-probs { display: flex; gap: 4px; align-items: center; }
+  .red-prob { font-size: 0.74rem; padding: 3px 7px; border-radius: 5px; font-weight: 700; background: var(--surface2); min-width: 50px; text-align: center; }
+  .red-prob .lbl { font-size: 0.6rem; color: var(--text-muted); display: block; line-height: 1; margin-bottom: 1px; }
+  .red-prob.picked { background: rgba(63,185,80,0.18); color: var(--green-bright); }
+  .red-prob.streck { background: rgba(31,111,235,0.10); }
+  .red-pick { font-size: 1rem; font-weight: 800; padding: 4px 10px; border-radius: 6px; background: var(--surface2); }
+  .red-pick.hel { background: rgba(251,146,60,0.18); color: var(--orange); }
+  .red-pick.halv { background: rgba(227,179,65,0.18); color: var(--yellow-bright); }
+  .red-pick.enkel { color: var(--text-muted); }
+
+  .red-detail { display: none; padding: 14px 16px; border-top: 1px solid var(--border); background: var(--surface2); }
+  .red-detail.open { display: block; }
+  .red-detail h4 { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 10px 0 6px; }
+  .red-flags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+  .red-flag { font-size: 0.72rem; padding: 3px 8px; border-radius: 12px; }
+  .red-flag.red { background: rgba(218,54,51,0.15); color: #ff7b72; border: 1px solid rgba(218,54,51,0.35); }
+  .red-flag.green { background: rgba(46,160,67,0.15); color: var(--green-bright); border: 1px solid rgba(46,160,67,0.35); }
+
+  .red-team-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  @media (max-width: 700px) { .red-team-pair { grid-template-columns: 1fr; } }
+  .red-team-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 0.78rem; }
+  .red-team-card .team-name { font-weight: 700; font-size: 0.92rem; margin-bottom: 6px; }
+  .red-stat-row { display: flex; justify-content: space-between; padding: 2px 0; }
+  .red-stat-row .lbl { color: var(--text-muted); }
+  .red-form-letters { letter-spacing: 0.1em; }
+  .red-form-letters .W { color: var(--green-bright); font-weight: 700; }
+  .red-form-letters .D { color: var(--yellow-bright); font-weight: 700; }
+  .red-form-letters .L { color: #ff7b72; font-weight: 700; }
+  .red-injury-list { font-size: 0.74rem; }
+  .red-injury-list li { color: #ff7b72; padding: 1px 0; list-style: none; }
+
+  .red-h2h-row { font-size: 0.76rem; padding: 3px 0; display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); }
+  .red-h2h-row:last-child { border-bottom: none; }
+
+  .red-recent-list { font-size: 0.74rem; }
+  .red-recent-list .res { font-weight: 700; padding: 0 5px; border-radius: 3px; }
+  .red-recent-list .res.W { background: rgba(46,160,67,0.18); color: var(--green-bright); }
+  .red-recent-list .res.D { background: rgba(210,153,34,0.18); color: var(--yellow-bright); }
+  .red-recent-list .res.L { background: rgba(218,54,51,0.18); color: #ff7b72; }
+
+  .red-system-out { background: var(--surface); border: 1px solid var(--green-bright); border-radius: 10px; padding: 14px 16px; margin-top: 16px; }
+  .red-system-out h3 { font-size: 1rem; margin-bottom: 8px; color: var(--green-bright); }
+  .red-system-out pre { background: var(--bg); padding: 8px 12px; border-radius: 5px; font-size: 0.78rem; overflow-x: auto; }
 </style>
 </head>
 <body>
@@ -164,6 +236,14 @@
 </header>
 
 <div class="container">
+
+  <!-- Tabs -->
+  <div class="tabs" role="tablist">
+    <button class="tab active" id="tabBtn-value" onclick="switchTab('value')">⚡ Värdespel</button>
+    <button class="tab" id="tabBtn-reducering" onclick="switchTab('reducering')">🎟️ Reducering</button>
+  </div>
+
+  <div class="tab-pane" id="tab-value">
 
   <!-- Setup -->
   <div class="setup-banner" id="setupBanner">
@@ -234,6 +314,43 @@
     </div>
   </div>
 
+  </div><!-- /tab-value -->
+
+  <div class="tab-pane hidden" id="tab-reducering">
+
+    <div class="red-toolbar">
+      <div class="meta" id="redRoundMeta">⏳ Laddar omgång…</div>
+      <button class="btn btn-sm" onclick="loadReducering()">🔄 Ladda om</button>
+    </div>
+
+    <div class="red-stat-strip" id="redStatStrip"></div>
+
+    <div class="red-mode-panel">
+      <h3>🎯 Reduceringsläge</h3>
+      <div class="red-mode-row">
+        <label><input type="radio" name="redMode" value="rows" checked onchange="rebuildSystem()"> Målrader</label>
+        <input type="range" id="redMaxRows" min="1" max="500" value="100" oninput="document.getElementById('redMaxRowsVal').textContent=this.value;rebuildSystem()">
+        <span class="val" id="redMaxRowsVal">100</span>
+        <span style="font-size:0.78rem;color:var(--text-muted)">rader (= kr på Stryktipset)</span>
+      </div>
+      <div class="red-mode-row">
+        <label><input type="radio" name="redMode" value="manual" onchange="rebuildSystem()"> Manuell mix</label>
+        <label>Hel:</label> <input type="number" id="redHel" value="2" min="0" max="13" oninput="rebuildSystem()">
+        <label>Halv:</label> <input type="number" id="redHalv" value="4" min="0" max="13" oninput="rebuildSystem()">
+      </div>
+    </div>
+
+    <div id="redMatchList"></div>
+
+    <div class="red-system-out" id="redSystemOut" style="display:none"></div>
+
+    <div class="red-mode-panel" id="redBacktestPanel" style="display:none">
+      <h3>📊 Backtest — vilken strategi är faktiskt bäst?</h3>
+      <div id="redBacktestBody"></div>
+    </div>
+
+  </div><!-- /tab-reducering -->
+
 </div>
 
 <!-- Log bet modal -->
@@ -262,6 +379,9 @@
 
 <div class="toast" id="toast"></div>
 
+<script src="engine/model.js"></script>
+<script src="engine/leagues.js"></script>
+<script src="engine/strategies.js"></script>
 <script>
 // ============================================================
 // STORAGE
@@ -274,15 +394,22 @@ const S = {
 // ============================================================
 // STATE
 // ============================================================
+// League catalogue lives in engine/leagues.js (shared with Node agent).
+// We expose the same names locally for minimal churn in the rest of this file.
+const { LEAGUES, LEAGUE_AVG, seasonFor } = window.SBE_LEAGUES;
+
+// The five "core" leagues for the value-scanner. New entries (Premier League etc.)
+// are available through window.SBE_LEAGUES but are off by default to avoid surprising
+// existing users who configured leagues for the old set.
+const CORE_LEAGUES = ['eredivisie','championship','allsvenskan','bundesliga','superliga'];
+
 let state = {
   oddsKey:       S.get('sbe_oddsKey', ''),
   footballKey:   S.get('sbe_footballKey', ''),
   bankroll:      S.get('sbe_bankroll', 10000),
   activeLeagues: (() => {
-    const ALL = ['eredivisie','championship','allsvenskan','bundesliga','superliga'];
-    const saved = S.get('sbe_leagues', ALL);
-    // Always add any new leagues not yet in saved list
-    const merged = [...new Set([...saved, ...ALL])];
+    const saved = S.get('sbe_leagues', CORE_LEAGUES);
+    const merged = [...new Set([...saved, ...CORE_LEAGUES])];
     S.set('sbe_leagues', merged);
     return merged;
   })(),
@@ -291,32 +418,6 @@ let state = {
   lastScanned:   null,
   scanning:      false
 };
-
-const LEAGUES = {
-  eredivisie:   { key: 'soccer_netherlands_eredivisie',  apiId: 88,  name: '🇳🇱 Eredivisie',   color: '#f97316', scandinavian: false },
-  championship: { key: 'soccer_england_championship',    apiId: 40,  name: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 Championship', color: '#388bfd', scandinavian: false },
-  allsvenskan:  { key: 'soccer_sweden_allsvenskan',      apiId: 113, name: '🇸🇪 Allsvenskan',  color: '#e3b341', scandinavian: true  },
-  bundesliga:   { key: 'soccer_germany_bundesliga',      apiId: 78,  name: '🇩🇪 Bundesliga',   color: '#dd0000', scandinavian: false },
-  superliga:    { key: 'soccer_denmark_superliga',        apiId: 119, name: '🇩🇰 Superliga',    color: '#c8102e', scandinavian: true  }
-};
-
-const LEAGUE_AVG = {
-  soccer_netherlands_eredivisie: 3.1,
-  soccer_england_championship:   2.5,
-  soccer_sweden_allsvenskan:     2.8,
-  soccer_germany_bundesliga:     3.1,
-  soccer_denmark_superliga:      2.8
-};
-
-function seasonFor(lgId) {
-  const lg = LEAGUES[lgId];
-  const now = new Date();
-  const yr  = now.getFullYear();
-  // Scandinavian leagues: calendar year (April–November)
-  if (lg?.scandinavian) return yr;
-  // European leagues: season starts July/August
-  return now.getMonth() >= 7 ? yr : yr - 1;
-}
 
 // Bookmakers available in Sweden — used to tag "best Swedish odds"
 const SWEDISH_BK = ['bet365','unibet','betsson','comeon','come on','betway','pinnacle','888sport','nordicbet','mycasino'];
@@ -328,55 +429,10 @@ function isSwedishBk(t) {
 function useForConsensus() { return true; }
 
 // ============================================================
-// MATH
+// MATH — re-exported from engine/model.js (shared with Node agent)
 // ============================================================
-const P = {
-  pmf: (k, l) => {
-    let fact = 1; for (let i=2; i<=k; i++) fact*=i;
-    return Math.exp(-l) * Math.pow(l, k) / fact;
-  },
-  val:   (odds, prob) => Math.round((odds * prob - 1) * 1000) / 10,
-  kelly: (odds, prob) => { const b=odds-1, q=1-prob, f=(b*prob-q)/b; return Math.max(0, Math.round(f*1000)/10); }
-};
-
-const DixonColes = {
-  rho: 0.13,
-  tau(i, j, lH, lA, r) {
-    if (i===0&&j===0) return 1 - lH*lA*r;
-    if (i===1&&j===0) return 1 + lA*r;
-    if (i===0&&j===1) return 1 + lH*r;
-    if (i===1&&j===1) return 1 - r;
-    return 1;
-  },
-  probs(lH, lA, max=9) {
-    let pH=0, pX=0, pA=0;
-    for (let h=0; h<=max; h++)
-      for (let a=0; a<=max; a++) {
-        const p = P.pmf(h,lH) * P.pmf(a,lA) * this.tau(h,a,lH,lA,this.rho);
-        if (h>a) pH+=p; else if (h===a) pX+=p; else pA+=p;
-      }
-    return { pH, pX, pA };
-  }
-};
-
-// Pinnacle is a sharp book — weight it 3x in consensus calculation
-function bkWeight(name) {
-  return name.toLowerCase().includes('pinnacle') ? 3 : 1;
-}
-function isPinnacle(name) { return name.toLowerCase().includes('pinnacle'); }
-
-// Margin-adjusted, Pinnacle-weighted consensus from raw 1x2 bookmaker odds
-function consensus(raw1x2) {
-  const entries = Object.entries(raw1x2);
-  if (!entries.length) return null;
-  let sH=0, sX=0, sA=0, totalW=0;
-  for (const [bkName, r] of entries) {
-    const w = bkWeight(bkName);
-    const p1=1/r.home, pX=1/r.draw, p2=1/r.away, t=p1+pX+p2;
-    sH+=p1/t*w; sX+=pX/t*w; sA+=p2/t*w; totalW+=w;
-  }
-  return { pH:sH/totalW, pX:sX/totalW, pA:sA/totalW };
-}
+const { P, DixonColes, isPinnacle, consensus,
+        computeLambdas, estimateLambdasFromMarket, formFactor } = window.SBE;
 
 // ============================================================
 // TEAM STATS CACHE — persists 24h in localStorage
@@ -461,36 +517,7 @@ async function fetchTeamStatistics(teamId, apiLeagueId, season) {
   return stats;
 }
 
-// Compute Dixon-Coles lambdas from real team stats
-// homeStats = stats for home team, awayStats = stats for away team
-function computeLambdas(homeStats, awayStats, ligaAvg) {
-  const half = ligaAvg / 2;
-  // Use home-specific averages for home team, away-specific for away team
-  const homeAtk = ((homeStats?.homeAvgScored   ?? homeStats?.totalAvgScored   ?? half)) / half;
-  const homeDef = ((homeStats?.homeAvgConceded  ?? homeStats?.totalAvgConceded ?? half)) / half;
-  const awayAtk = ((awayStats?.awayAvgScored    ?? awayStats?.totalAvgScored   ?? half)) / half;
-  const awayDef = ((awayStats?.awayAvgConceded  ?? awayStats?.totalAvgConceded ?? half)) / half;
-  const lH = Math.max(0.3, homeAtk * awayDef * half);
-  const lA = Math.max(0.3, awayAtk * homeDef * half);
-  return { lH, lA };
-}
-
-// Fallback: estimate lambdas from market consensus (circular, but better than nothing)
-function estimateLambdasFromMarket(cons, ligaAvg) {
-  const half = ligaAvg / 2;
-  const lH = Math.max(0.3, (cons.pH + 0.42 * cons.pX) * ligaAvg * 0.88);
-  const lA = Math.max(0.3, (cons.pA + 0.42 * cons.pX) * ligaAvg * 0.88);
-  return { lH, lA };
-}
-
-// Form string "WWDLW" → multiplier 0.9–1.1
-function formFactor(formStr) {
-  if (!formStr) return 1.0;
-  const last5 = formStr.slice(-5);
-  let pts = 0;
-  for (const c of last5) pts += c==='W'?3:c==='D'?1:0;
-  return 0.9 + (pts / 15) * 0.2; // 0.9 at 0pts, 1.1 at 15pts
-}
+// computeLambdas, estimateLambdasFromMarket, formFactor are imported from engine/model.js above.
 
 // ============================================================
 // DECISION LOGIC
@@ -1166,6 +1193,348 @@ function saveKeys() {
   S.set('sbe_bankroll',    state.bankroll);
   document.getElementById('bankrollDisplay').textContent = state.bankroll.toLocaleString('sv-SE') + ' kr';
   showToast('✅ Sparat!');
+}
+
+// ============================================================
+// REDUCERING TAB — reads agent/output/round-enriched.json
+// ============================================================
+const Reducering = {
+  data: null,           // enriched round JSON
+  expandedIdx: new Set()
+};
+
+function switchTab(name) {
+  for (const t of ['value','reducering']) {
+    document.getElementById('tab-' + t).classList.toggle('hidden', t !== name);
+    document.getElementById('tabBtn-' + t).classList.toggle('active', t === name);
+  }
+  if (name === 'reducering' && !Reducering.data) loadReducering();
+}
+
+async function loadReducering() {
+  const meta = document.getElementById('redRoundMeta');
+  meta.textContent = '⏳ Laddar agent/output/round-enriched.json…';
+  document.getElementById('redMatchList').innerHTML = '';
+  document.getElementById('redStatStrip').innerHTML = '';
+  document.getElementById('redSystemOut').style.display = 'none';
+  document.getElementById('redBacktestPanel').style.display = 'none';
+  try {
+    const r = await fetch('agent/output/round-enriched.json', { cache: 'no-cache' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    Reducering.data = await r.json();
+    renderReducering();
+    rebuildSystem();
+  } catch (e) {
+    meta.innerHTML = `❌ Kunde inte ladda enriched-data: ${e.message}.<br><span style="font-size:0.78rem">Kör <code>cd agent && npm run all -- --rows 100</code> i terminalen för att generera <code>agent/output/round-enriched.json</code>.</span>`;
+  }
+  loadBacktest();
+}
+
+async function loadBacktest() {
+  try {
+    const r = await fetch('agent/output/backtest.json', { cache: 'no-cache' });
+    if (!r.ok) return;
+    const bt = await r.json();
+    renderBacktest(bt);
+  } catch {}
+}
+
+function renderBacktest(bt) {
+  const panel = document.getElementById('redBacktestPanel');
+  const body  = document.getElementById('redBacktestBody');
+  if (!bt?.results?.length) { panel.style.display = 'none'; return; }
+  panel.style.display = 'block';
+
+  const best = bt.results[0];
+  const baseline = bt.results.find(r => r.strategy === 'streck-leader') || bt.results.find(r => r.strategy === 'streck-raw');
+  const delta = baseline && best.logLoss != null && baseline.logLoss != null
+    ? (baseline.logLoss - best.logLoss).toFixed(3) : null;
+
+  body.innerHTML = `
+    <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:10px">
+      Backtest över <strong style="color:var(--text)">${bt.drawsBacktested}</strong> omgångar
+      (omg ${bt.drawRange?.from}–${bt.drawRange?.to}, ${bt.matchesScored} matcher).
+      Bästa strategi: <strong style="color:var(--green-bright)">${escapeHtml(best.strategy)}</strong>${delta ? ` · ${delta} log-loss bättre än streck-leader baseline` : ''}.
+    </div>
+    <table style="width:100%;font-size:0.82rem;border-collapse:collapse">
+      <thead>
+        <tr style="color:var(--text-muted);text-align:left;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em">
+          <th style="padding:6px 4px">Strategi</th>
+          <th style="padding:6px 4px;text-align:right">Matcher</th>
+          <th style="padding:6px 4px;text-align:right" title="Brier-poäng: lägre = bättre kalibrering">Brier</th>
+          <th style="padding:6px 4px;text-align:right" title="Cross-entropy: lägre = bättre">Log-loss</th>
+          <th style="padding:6px 4px;text-align:right" title="Top-pick träffrate">Träff%</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${bt.results.map((r, i) => `
+          <tr style="border-top:1px solid var(--border);${i===0?'background:rgba(63,185,80,0.07)':''}">
+            <td style="padding:6px 4px;font-weight:${i===0?'700':'500'};${i===0?'color:var(--green-bright)':''}">${i===0?'🏆 ':''}${escapeHtml(r.strategy)}</td>
+            <td style="padding:6px 4px;text-align:right;color:var(--text-muted)">${r.matches}</td>
+            <td style="padding:6px 4px;text-align:right">${r.brier ?? '—'}</td>
+            <td style="padding:6px 4px;text-align:right;font-weight:700">${r.logLoss ?? '—'}</td>
+            <td style="padding:6px 4px;text-align:right">${r.hitRate != null ? (r.hitRate*100).toFixed(1)+'%' : '—'}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+    <div style="font-size:0.72rem;color:var(--text-muted);margin-top:8px">
+      Senast backtestat: ${new Date(bt.backtestedAt).toLocaleString('sv-SE')}.
+      Generera ny: <code>cd agent && node cli.js backtest --count 30</code>
+    </div>
+  `;
+}
+
+function renderReducering() {
+  const d = Reducering.data;
+  if (!d) return;
+  const dl = d.deadline ? new Date(d.deadline) : null;
+  const demoTag = d.isDemo
+    ? `<span style="background:rgba(251,146,60,0.20);color:var(--orange);padding:3px 8px;border-radius:12px;font-size:0.7rem;font-weight:700;margin-left:8px">⚠️ DEMO-DATA</span>`
+    : '';
+  document.getElementById('redRoundMeta').innerHTML =
+    `<strong>${d.game} omgång ${d.roundNo ?? '?'}</strong>${demoTag}` +
+    (dl ? ` · deadline ${dl.toLocaleString('sv-SE', { weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })}` : '') +
+    ` · ${d.matches.length} matcher`;
+
+  // Stat strip: completeness, API calls, model sources
+  const apiBacked = d.matches.filter(m => m.model?.source === 'api-football').length;
+  const fullDossier = d.matches.filter(m => (m.completeness?.pct || 0) >= 70).length;
+  const totalApi = d.apiCallsUsed ?? '?';
+  document.getElementById('redStatStrip').innerHTML = `
+    <div class="summary-box"><div class="val" style="color:var(--blue-bright)">${apiBacked}/${d.matches.length}</div><div class="lbl">📡 API-Football modell</div></div>
+    <div class="summary-box"><div class="val" style="color:var(--green-bright)">${fullDossier}/${d.matches.length}</div><div class="lbl">📋 Full dossier (≥70%)</div></div>
+    <div class="summary-box"><div class="val" style="color:#c9b1ff">${totalApi}</div><div class="lbl">🔗 API-anrop denna omg.</div></div>
+    <div class="summary-box"><div class="val" style="color:var(--yellow-bright)">${d.analysesAttached ?? 0}/${d.matches.length}</div><div class="lbl">📝 Reducering.se-analyser</div></div>
+  `;
+
+  document.getElementById('redMatchList').innerHTML = d.matches.map(renderRedMatch).join('');
+}
+
+function fmtPct(p) { return ((p || 0) * 100).toFixed(0) + '%'; }
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function renderRedMatch(m) {
+  const isOpen = Reducering.expandedIdx.has(m.idx);
+  const md = m.model || {};
+  const picked = md.pickedOutcome || '';
+  const probBox = (label, p, klass) =>
+    `<div class="red-prob ${klass||''}"><span class="lbl">${label}</span>${fmtPct(p)}</div>`;
+  const streck = m.streck || {};
+  const streckPct = (k) => (Number(streck[k]) || 0) + '%';
+  const pickedTag = pickFromSystem(m.idx);
+  const levelClass = pickedTag?.level || 'enkel';
+  const cardClass = levelClass === 'hel' ? 'red-match hel' : levelClass === 'halv' ? 'red-match gardered' : 'red-match';
+
+  return `<div class="${cardClass}">
+    <div class="red-match-head" onclick="toggleRedMatch(${m.idx})">
+      <div class="red-idx">${m.idx}.</div>
+      <div>
+        <div class="red-teams">${escapeHtml(m.home)} — ${escapeHtml(m.away)}</div>
+        <div class="red-league-tag">${escapeHtml(m.lgName || m.league || '')} · ${m.kickoff ? new Date(m.kickoff).toLocaleString('sv-SE', { weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : ''} · källa: ${md.source || '—'}${(m.completeness?.pct || 0) < 70 ? ' ⚠️' : ''}</div>
+      </div>
+      <div class="red-probs">
+        ${probBox('Modell 1', md.pH, picked==='1' ? 'picked' : '')}
+        ${probBox('X',       md.pX, picked==='X' ? 'picked' : '')}
+        ${probBox('2',       md.pA, picked==='2' ? 'picked' : '')}
+        <div style="width:6px"></div>
+        <div class="red-prob streck"><span class="lbl">Streck</span>${streckPct('1')} / ${streckPct('X')} / ${streckPct('2')}</div>
+      </div>
+      <div class="red-pick ${levelClass}">${pickedTag ? pickedTag.outcomes.join('') : (picked || '–')}</div>
+    </div>
+    <div class="red-detail ${isOpen ? 'open' : ''}" id="red-detail-${m.idx}">
+      ${isOpen ? renderRedDetail(m) : ''}
+    </div>
+  </div>`;
+}
+
+function pickFromSystem(idx) {
+  if (!Reducering.currentSystem) return null;
+  return Reducering.currentSystem.picks.find(p => p.idx === idx) || null;
+}
+
+function toggleRedMatch(idx) {
+  if (Reducering.expandedIdx.has(idx)) Reducering.expandedIdx.delete(idx);
+  else Reducering.expandedIdx.add(idx);
+  // Re-render just the changed card body via full re-render (lazy but cheap for 13 matches)
+  document.getElementById('redMatchList').innerHTML = Reducering.data.matches.map(renderRedMatch).join('');
+}
+
+function renderRedDetail(m) {
+  const flags = m.flags || { red: [], green: [] };
+  const flagHtml = [...flags.green.map(f => `<span class="red-flag green">${escapeHtml(f)}</span>`),
+                    ...flags.red  .map(f => `<span class="red-flag red">${escapeHtml(f)}</span>`)].join('');
+
+  const teamCard = (t, label) => {
+    if (!t) return `<div class="red-team-card"><div class="team-name">${escapeHtml(label)}</div><div style="color:var(--text-muted);font-size:0.78rem">⚠️ Lagdata saknas</div></div>`;
+    const s = t.stats || {};
+    const form = (t.form || '').slice(-5).split('').map(c =>
+      `<span class="${c==='W'?'W':c==='D'?'D':'L'}">${c}</span>`).join('');
+    const inj = (t.injuries || []).slice(0, 6);
+    const recent = (t.recentResults || []).slice(0, 8);
+    return `<div class="red-team-card">
+      <div class="team-name">${escapeHtml(t.name || label)} ${t.standings ? `<span style="color:var(--text-muted);font-weight:500">#${t.standings.rank} (${t.standings.points}p)</span>` : ''}</div>
+      <div class="red-stat-row"><span class="lbl">Form (senaste 5)</span><span class="red-form-letters">${form || '—'}</span></div>
+      <div class="red-stat-row"><span class="lbl">PPG hemma/borta</span><span>${t.homeAwaySplit?.homePPG?.toFixed(2) ?? '—'} / ${t.homeAwaySplit?.awayPPG?.toFixed(2) ?? '—'}</span></div>
+      <div class="red-stat-row"><span class="lbl">Mål för/emot hemma</span><span>${s.homeAvgScored?.toFixed(2) ?? '—'} / ${s.homeAvgConceded?.toFixed(2) ?? '—'}</span></div>
+      <div class="red-stat-row"><span class="lbl">Mål för/emot borta</span><span>${s.awayAvgScored?.toFixed(2) ?? '—'} / ${s.awayAvgConceded?.toFixed(2) ?? '—'}</span></div>
+      <div class="red-stat-row"><span class="lbl">Spelschema (14d senast/kommande)</span><span>${t.fixtureCongestion?.last14d ?? '—'} / ${t.fixtureCongestion?.next14d ?? '—'}</span></div>
+      ${inj.length ? `<h4 style="margin-top:8px">🚑 Skador (${t.injuries.length})</h4>
+        <ul class="red-injury-list">${inj.map(i => `<li>${escapeHtml(i.player)} <span style="color:var(--text-muted)">${escapeHtml(i.position || '')} · ${escapeHtml(i.expectedReturn || i.type || '')}</span></li>`).join('')}</ul>` : ''}
+      ${recent.length ? `<h4 style="margin-top:8px">📅 Senaste matcher</h4>
+        <div class="red-recent-list">${recent.map(r => `<div style="padding:2px 0">
+          <span class="res ${r.result || ''}">${r.result || '–'}</span>
+          <span style="margin-left:6px">${r.hOrA} vs ${escapeHtml(r.opp || '')}${r.oppRank ? ` <span style="color:var(--text-muted)">(#${r.oppRank})</span>` : ''}</span>
+          <span style="float:right;color:var(--text-muted)">${r.score || ''}</span>
+        </div>`).join('')}</div>` : ''}
+    </div>`;
+  };
+
+  const h2hRows = (m.h2h?.last10 || []).slice(0, 10).map(f => `
+    <div class="red-h2h-row">
+      <span>${escapeHtml(f.home)} ${f.score || '?'} ${escapeHtml(f.away)}</span>
+      <span style="color:var(--text-muted)">${f.date ? new Date(f.date).toLocaleDateString('sv-SE') : ''}</span>
+    </div>`).join('');
+
+  const model = m.model || {};
+  const edge = model.edge || {};
+
+  return `
+    ${flagHtml ? `<div class="red-flags">${flagHtml}</div>` : ''}
+    <div class="red-team-pair">
+      ${teamCard(m.homeTeam, m.home)}
+      ${teamCard(m.awayTeam, m.away)}
+    </div>
+
+    <h4>🤝 Inbördes möten (senaste 10)</h4>
+    ${m.h2h ? `
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px">
+        ${m.h2h.homeWins} hemmavinster · ${m.h2h.draws} oavgjort · ${m.h2h.awayWins} bortavinster
+        ${m.h2h.avgGoals != null ? ` · snitt ${m.h2h.avgGoals.toFixed(2)} mål` : ''}
+        ${m.h2h.bttsPct != null ? ` · btts ${m.h2h.bttsPct}%` : ''}
+      </div>
+      ${h2hRows || '<div style="color:var(--text-muted);font-size:0.78rem">Inga inbördes möten i API-Footballs data.</div>'}
+    ` : '<div style="color:var(--text-muted);font-size:0.78rem">H2H-data saknas.</div>'}
+
+    <h4>🧮 Modell</h4>
+    <div class="why-box" style="margin-bottom:6px">
+      <div class="why-row"><span>Datakälla</span><span class="why-val">${escapeHtml(model.source || '—')}</span></div>
+      <div class="why-row"><span>Förv. mål (xG)</span><span class="why-val">H ${model.lH?.toFixed(2) ?? '—'} · B ${model.lA?.toFixed(2) ?? '—'}</span></div>
+      <div class="why-row"><span>P(1) / P(X) / P(2)</span><span class="why-val">${fmtPct(model.pH)} · ${fmtPct(model.pX)} · ${fmtPct(model.pA)}</span></div>
+      <div class="why-row"><span>Streck %</span><span class="why-val">${(m.streck?.['1']||0)}% · ${(m.streck?.X||0)}% · ${(m.streck?.['2']||0)}%</span></div>
+      ${edge['1'] != null ? `<div class="why-row"><span>Edge vs streck</span><span class="why-val">
+        <span class="${edge['1']>0?'edge-pos':edge['1']<0?'edge-neg':'edge-neu'}">${edge['1']>0?'+':''}${(edge['1']*100).toFixed(1)}pp(1)</span>
+        <span class="${edge['X']>0?'edge-pos':edge['X']<0?'edge-neg':'edge-neu'}"> ${edge['X']>0?'+':''}${(edge['X']*100).toFixed(1)}pp(X)</span>
+        <span class="${edge['2']>0?'edge-pos':edge['2']<0?'edge-neg':'edge-neu'}"> ${edge['2']>0?'+':''}${(edge['2']*100).toFixed(1)}pp(2)</span>
+      </span></div>` : ''}
+    </div>
+    ${(model.adjustments?.length) ? `<div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:8px">Justeringar: ${model.adjustments.map(escapeHtml).join(' · ')}</div>` : ''}
+
+    ${m.predictions ? `<h4>🤖 API-Football's prediktion</h4>
+      <div style="font-size:0.8rem;background:var(--surface);border-radius:6px;padding:8px 10px;margin-bottom:8px">
+        ${escapeHtml(m.predictions.advice || '')} ${m.predictions.percent ? `· 1 ${m.predictions.percent.home||'—'} / X ${m.predictions.percent.draw||'—'} / 2 ${m.predictions.percent.away||'—'}` : ''}
+      </div>` : ''}
+
+    ${m.analys ? `<h4>📝 Reducering.se-analys</h4>
+      <div style="font-size:0.82rem;line-height:1.5;color:var(--text);background:var(--surface);border-radius:6px;padding:10px 12px">${escapeHtml(m.analys)}</div>` : ''}
+  `;
+}
+
+// ============================================================
+// REDUCERING — system builder (runs in browser using same shared engine logic)
+// ============================================================
+function buildSystem(matches, mode, params) {
+  // Local re-implementation of agent/reducer.js so the UI can rebuild
+  // instantly when the user moves sliders. Mirrors the Node-side logic.
+  const startingPicks = matches.map(m => {
+    const sorted = [
+      { o: '1', p: m.model?.pH || 0 },
+      { o: 'X', p: m.model?.pX || 0 },
+      { o: '2', p: m.model?.pA || 0 }
+    ].sort((a, b) => b.p - a.p);
+    return {
+      idx: m.idx, home: m.home, away: m.away,
+      sorted,
+      outcomes: [sorted[0].o],
+      level: 'enkel',
+      coveredP: sorted[0].p,
+      reasonNotes: []
+    };
+  });
+  const tot = arr => arr.reduce((a, p) => a * p.outcomes.length, 1);
+  const upgrade = (p, lvl) => {
+    if (lvl === 'halv') {
+      p.outcomes = [p.sorted[0].o, p.sorted[1].o];
+      p.coveredP = p.sorted[0].p + p.sorted[1].p;
+      p.level = 'halv';
+    } else {
+      p.outcomes = ['1','X','2'];
+      p.coveredP = 1;
+      p.level = 'hel';
+    }
+  };
+
+  if (mode === 'rows') {
+    const max = params.maxRows;
+    while (true) {
+      let best = null;
+      const cur = tot(startingPicks);
+      for (const p of startingPicks) {
+        const tries = [];
+        if (p.level === 'enkel') tries.push({ lvl: 'halv', factor: 2, cov: p.sorted[0].p + p.sorted[1].p });
+        if (p.level === 'enkel') tries.push({ lvl: 'hel',  factor: 3, cov: 1 });
+        if (p.level === 'halv')  tries.push({ lvl: 'hel',  factor: 1.5, cov: 1 });
+        for (const t of tries) {
+          const newRows = Math.round(cur * t.factor);
+          if (newRows > max) continue;
+          const gain = t.cov - p.coveredP;
+          if (gain <= 0) continue;
+          const score = gain / (newRows - cur);
+          if (!best || score > best.score) best = { p, lvl: t.lvl, score };
+        }
+      }
+      if (!best) break;
+      upgrade(best.p, best.lvl);
+    }
+  } else {
+    let { hel = 0, halv = 0 } = params;
+    const order = [...startingPicks.keys()].sort((a, b) => startingPicks[a].sorted[0].p - startingPicks[b].sorted[0].p);
+    for (const i of order) {
+      if (hel > 0) { upgrade(startingPicks[i], 'hel'); hel--; continue; }
+      if (halv > 0) { upgrade(startingPicks[i], 'halv'); halv--; continue; }
+      break;
+    }
+  }
+  const rows = tot(startingPicks);
+  const p13 = startingPicks.reduce((a, p) => a * p.coveredP, 1);
+  const counts = { enkel: 0, halv: 0, hel: 0 };
+  for (const p of startingPicks) counts[p.level]++;
+  return { mode, params, totalRows: rows, expectedP13: p13, counts, picks: startingPicks };
+}
+
+function rebuildSystem() {
+  if (!Reducering.data) return;
+  const mode = document.querySelector('input[name=redMode]:checked')?.value || 'rows';
+  const params = mode === 'rows'
+    ? { maxRows: parseInt(document.getElementById('redMaxRows').value, 10) }
+    : { hel: parseInt(document.getElementById('redHel').value || '0', 10),
+        halv: parseInt(document.getElementById('redHalv').value || '0', 10) };
+  const sys = buildSystem(Reducering.data.matches, mode, params);
+  Reducering.currentSystem = sys;
+  document.getElementById('redMatchList').innerHTML = Reducering.data.matches.map(renderRedMatch).join('');
+  document.getElementById('redSystemOut').style.display = 'block';
+  document.getElementById('redSystemOut').innerHTML = `
+    <h3>🎟️ Genererat system</h3>
+    <div style="display:flex;gap:18px;flex-wrap:wrap;margin-bottom:8px;font-size:0.85rem">
+      <span><strong>${sys.totalRows.toLocaleString('sv-SE')}</strong> rader</span>
+      <span>P(13 rätt) ≈ <strong style="color:var(--green-bright)">${(sys.expectedP13*100).toFixed(3)}%</strong></span>
+      <span>${sys.counts.hel} hel · ${sys.counts.halv} halv · ${sys.counts.enkel} enkel</span>
+      <span>Stryktipset: ${sys.totalRows} kr · Europatipset: ${(sys.totalRows*2).toLocaleString('sv-SE')} kr</span>
+    </div>
+    <pre>${sys.picks.map(p => `${String(p.idx).padStart(2)}. ${(p.home + ' – ' + p.away).padEnd(40)}  ${p.outcomes.join('').padEnd(3)}  (${(p.coveredP*100).toFixed(0)}% täckt)`).join('\n')}</pre>
+  `;
 }
 
 // ============================================================
