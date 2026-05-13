@@ -1288,8 +1288,11 @@ function renderReducering() {
   const d = Reducering.data;
   if (!d) return;
   const dl = d.deadline ? new Date(d.deadline) : null;
+  const demoTag = d.isDemo
+    ? `<span style="background:rgba(251,146,60,0.20);color:var(--orange);padding:3px 8px;border-radius:12px;font-size:0.7rem;font-weight:700;margin-left:8px">⚠️ DEMO-DATA</span>`
+    : '';
   document.getElementById('redRoundMeta').innerHTML =
-    `<strong>${d.game} omgång ${d.roundNo ?? '?'}</strong>` +
+    `<strong>${d.game} omgång ${d.roundNo ?? '?'}</strong>${demoTag}` +
     (dl ? ` · deadline ${dl.toLocaleString('sv-SE', { weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })}` : '') +
     ` · ${d.matches.length} matcher`;
 
