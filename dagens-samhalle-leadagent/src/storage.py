@@ -68,8 +68,9 @@ def known_ids() -> set[str]:
 
 def filter_new(ads: Iterable[JobAd]) -> list[JobAd]:
     seen = known_ids()
-    new_ads = [a for a in ads if a.annons_id not in seen]
-    logger.info("Dedup: %d nya / %d totalt", len(new_ads), sum(1 for _ in ads) if isinstance(ads, list) else "?")
+    ads_list = list(ads)
+    new_ads = [a for a in ads_list if a.annons_id not in seen]
+    logger.info("Dedup: %d nya / %d totalt", len(new_ads), len(ads_list))
     return new_ads
 
 

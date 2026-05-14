@@ -46,14 +46,19 @@ def _get_service():
     return build("drive", "v3", credentials=creds, cache_discovery=False)
 
 
+def _escape_q(value: str) -> str:
+    """Escape sträng för Google Drive `q`-syntax: backslash sedan apostrof."""
+    return value.replace("\\", "\\\\").replace("'", "\\'")
+
+
 def _find_child(service, parent_id: str, name: str, mime: str | None = None) -> str | None:
     q_parts = [
-        f"'{parent_id}' in parents",
-        f"name = '{name.replace(chr(39), chr(92) + chr(39))}'",
+        f"'{_escape_q(parent_id)}' in parents",
+        f"name = '{_escape_q(name)}'",
         "trashed = false",
     ]
     if mime:
-        q_parts.append(f"mimeType = '{mime}'")
+        q_parts.append(f"mimeType = '{_escape_q(mime)}'")
     q = " and ".join(q_parts)
     resp = service.files().list(
         q=q, fields="files(id,name)", supportsAllDrives=True,

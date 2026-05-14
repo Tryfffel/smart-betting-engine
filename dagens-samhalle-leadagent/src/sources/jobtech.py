@@ -101,6 +101,7 @@ class JobTechClient:
         published_after = (datetime.utcnow() - timedelta(days=days)).isoformat(timespec="seconds")
         ads: list[JobAd] = []
         offset = 0
+        total_in_api: int | None = None
         for page in range(MAX_PAGES):
             params = {
                 "published-after": published_after,
@@ -115,6 +116,13 @@ class JobTechClient:
                 logger.error("JobTech-anrop misslyckades: %s", e)
                 break
 
+            if total_in_api is None:
+                total_field = payload.get("total")
+                if isinstance(total_field, dict):
+                    total_in_api = total_field.get("value")
+                elif isinstance(total_field, int):
+                    total_in_api = total_field
+
             hits = payload.get("hits", [])
             if not hits:
                 break
@@ -128,8 +136,7 @@ class JobTechClient:
                 break
             offset += PAGE_SIZE
 
-        total = payload.get("total", {}).get("value") if "payload" in dir() else None
-        logger.info("JobTech: %d annonser hämtade (total i API: %s)", len(ads), total)
+        logger.info("JobTech: %d annonser hämtade (total i API: %s)", len(ads), total_in_api)
         return ads
 
 
