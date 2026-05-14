@@ -6,7 +6,7 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
-Source = Literal["jobtech", "linkedin"]
+Source = Literal["jobtech", "linkedin", "indeed"]
 OrgTyp = Literal["kommun", "region", "myndighet", "kommunalt_bolag", "rekryteringsbyra", "okänd"]
 RoleBucket = Literal["chef", "specialist", "exkluderad", "okänd"]
 Score = Literal["A", "B", "C"]

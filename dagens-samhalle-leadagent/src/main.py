@@ -10,9 +10,9 @@ from typing import Iterable
 import typer
 from dotenv import load_dotenv
 
-from src import drive, enrich, export, filter as flt, score, storage
+from src import enrich, export, filter as flt, score, storage
 from src.models import JobAd, Lead
-from src.sources import jobtech, linkedin
+from src.sources import indeed, jobtech, linkedin
 
 load_dotenv()
 
@@ -30,30 +30,29 @@ def _slug(text: str) -> str:
     return re.sub(r"[^\w]+", "-", text.lower())[:80]
 
 
-def _crossdedup_linkedin(jobtech_ads: list[JobAd], linkedin_ads: list[JobAd]) -> list[JobAd]:
-    """Kasta LinkedIn-träffar som motsvarar en JobTech-träff (samma arbetsgivare
+def _crossdedup(primary: list[JobAd], secondary: list[JobAd], label: str) -> list[JobAd]:
+    """Kasta secondary-träffar som motsvarar en primary-träff (samma arbetsgivare
     + roll-substring + ±2 dagar publicerad)."""
-    jt_index: dict[tuple[str, str], list[JobAd]] = {}
-    for ad in jobtech_ads:
+    index: dict[tuple[str, str], list[JobAd]] = {}
+    for ad in primary:
         key = (_slug(ad.arbetsgivare), _slug(ad.titel)[:30])
-        jt_index.setdefault(key, []).append(ad)
+        index.setdefault(key, []).append(ad)
 
     kept: list[JobAd] = []
     dropped = 0
-    for li_ad in linkedin_ads:
-        key = (_slug(li_ad.arbetsgivare), _slug(li_ad.titel)[:30])
-        candidates = jt_index.get(key, [])
-        match = any(abs((li_ad.publicerad - jt.publicerad).days) <= 2 for jt in candidates)
-        if match:
+    for ad in secondary:
+        key = (_slug(ad.arbetsgivare), _slug(ad.titel)[:30])
+        candidates = index.get(key, [])
+        if any(abs((ad.publicerad - p.publicerad).days) <= 2 for p in candidates):
             dropped += 1
             continue
-        kept.append(li_ad)
+        kept.append(ad)
     if dropped:
-        logger.info("Korsdedup: kastade %d LinkedIn-träffar som matchar JobTech", dropped)
+        logger.info("Korsdedup: kastade %d %s-träffar som matchar tidigare källa", dropped, label)
     return kept
 
 
-async def _fetch_all(days: int, include_linkedin: bool) -> list[JobAd]:
+async def _fetch_all(days: int, include_linkedin: bool, include_indeed: bool) -> list[JobAd]:
     jt_task = asyncio.create_task(jobtech.fetch_ads(days=days))
     li_task = (
         asyncio.create_task(asyncio.to_thread(linkedin.fetch_ads, days))
@@ -61,8 +60,15 @@ async def _fetch_all(days: int, include_linkedin: bool) -> list[JobAd]:
     )
     jt_ads = await jt_task
     li_ads = await li_task if li_task else []
-    li_ads = _crossdedup_linkedin(jt_ads, li_ads)
-    return jt_ads + li_ads
+    li_ads = _crossdedup(jt_ads, li_ads, "LinkedIn")
+
+    in_ads: list[JobAd] = []
+    if include_indeed:
+        in_ads = indeed.fetch_ads(days=days)
+        # Dedupa mot både JobTech och kvarvarande LinkedIn-träffar
+        in_ads = _crossdedup(jt_ads + li_ads, in_ads, "Indeed")
+
+    return jt_ads + li_ads + in_ads
 
 
 def _build_lead(ad: JobAd, cls: flt.Classification, sc: score._ScoreResponse) -> Lead:
@@ -83,14 +89,19 @@ def _build_lead(ad: JobAd, cls: flt.Classification, sc: score._ScoreResponse) ->
 def run(
     days: int = typer.Option(3, help="Antal dagar bakåt att hämta annonser"),
     no_enrich: bool = typer.Option(False, "--no-enrich", help="Hoppa över kontaktperson-sökning"),
-    no_upload: bool = typer.Option(False, "--no-upload", help="Hoppa över Drive-upload"),
     no_linkedin: bool = typer.Option(False, "--no-linkedin", help="Hoppa över LinkedIn-källan"),
+    no_indeed: bool = typer.Option(False, "--no-indeed", help="Hoppa över Indeed-källan (staging-fil)"),
 ) -> None:
-    """Full körning: hämta → filtrera → score → enrich → export → upload."""
+    """Lokal pipeline: hämta → filtrera → score → enrich → export.
+
+    Drive-upload sker via Claude Code-orkestrering (se RUNBOOK.md), inte
+    här. Skriptet är en byggsten."""
     today = date.today()
     logger.info("=== Lead-research-agent startar (days=%d) ===", days)
 
-    ads = asyncio.run(_fetch_all(days=days, include_linkedin=not no_linkedin))
+    ads = asyncio.run(_fetch_all(
+        days=days, include_linkedin=not no_linkedin, include_indeed=not no_indeed,
+    ))
     logger.info("Hämtade %d annonser totalt", len(ads))
 
     new_ads = storage.filter_new(ads)
@@ -121,12 +132,7 @@ def run(
 
     run_dir = export.write_outputs(leads, today)
     logger.info("Output skrivet till %s", run_dir)
-
-    if not no_upload:
-        drive.upload_run(today)
-    else:
-        logger.info("Hoppar över Drive-upload (--no-upload)")
-
+    logger.info("Drive-upload sker via Claude Code MCP (se RUNBOOK.md)")
     logger.info("=== Klart ===")
 
 
@@ -146,14 +152,18 @@ def stats() -> None:
 
 
 @app.command()
-def upload(date_str: str = typer.Argument(..., metavar="YYYY-MM-DD")) -> None:
-    """Ladda upp en redan exporterad körning till Drive."""
+def rebuild(date_str: str = typer.Argument(..., metavar="YYYY-MM-DD")) -> None:
+    """Återskapa outputs/YYYY-MM-DD/ från DB:n (utan att köra hela pipelinen).
+
+    Användbart om man behöver ladda upp en gammal körning till Drive igen
+    eller om export-formatet har ändrats."""
     d = date.fromisoformat(date_str)
     leads = storage.load_leads_for_date(d)
-    if leads:
-        export.write_outputs(leads, d)
-    ok = drive.upload_run(d)
-    typer.echo("Uppladdning klar." if ok else "Uppladdning hoppades över.")
+    if not leads:
+        typer.echo(f"Inga leads i DB:n för {d}")
+        raise typer.Exit(1)
+    run_dir = export.write_outputs(leads, d)
+    typer.echo(f"Återskapade {len(leads)} leads till {run_dir}")
 
 
 if __name__ == "__main__":

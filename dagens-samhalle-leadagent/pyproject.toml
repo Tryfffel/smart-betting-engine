@@ -11,8 +11,6 @@ dependencies = [
     "pyyaml>=6.0",
     "typer>=0.12",
     "python-dotenv>=1.0",
-    "google-api-python-client>=2.140",
-    "google-auth>=2.32",
 ]
 
 [build-system]
