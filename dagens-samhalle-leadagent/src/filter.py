@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
@@ -42,39 +43,48 @@ def _exkluderingar() -> list[str]:
     return _load_yaml("exkluderingar.yaml")["exkluderade_roller"]
 
 
-def _match_org(employer: str) -> tuple[OrgTyp, str]:
-    """Returnera (org_typ, normaliserat_namn). Default ("okänd", employer)."""
-    emp_lc = employer.lower()
-    orgs = _orgs()
+def _word_match(needle: str, haystack: str) -> bool:
+    """Substring-match med ordgränser, case-insensitive och tål svenska tecken
+    + genitiv-s. Hindrar t.ex. \"Sala\" från att matcha \"Uppsala\"."""
+    pattern = r"(?<!\w)" + re.escape(needle) + r"s?(?!\w)"
+    return re.search(pattern, haystack, flags=re.IGNORECASE) is not None
 
-    # Rekryteringsbyråer först (de kan ha kommunnamn i annonsen)
-    for byra in orgs.get("rekryteringsbyraer", []):
-        if byra.lower() in emp_lc:
+
+def _match_org(employer: str) -> tuple[OrgTyp, str]:
+    """Returnera (org_typ, normaliserat_namn). Default ("okänd", employer).
+
+    Längre kandidater testas före kortare så att t.ex. \"Region Stockholm\"
+    väljs framför ren substring-match mot \"Stockholm\"."""
+    orgs = _orgs()
+    emp_lc = employer.lower()
+
+    # Rekryteringsbyråer först (annonsen kan ha kommunnamn i texten).
+    for byra in sorted(orgs.get("rekryteringsbyraer", []), key=len, reverse=True):
+        if _word_match(byra, employer):
             return "rekryteringsbyra", byra
 
-    # Region
-    for region in orgs.get("regioner", []):
-        if region.lower() in emp_lc:
+    # Region — längre namn först ("Region Stockholm" före "Region X").
+    for region in sorted(orgs.get("regioner", []), key=len, reverse=True):
+        if _word_match(region, employer):
             return "region", region
-    # Specialfall: "Stockholms läns landsting" etc.
     if "läns landsting" in emp_lc or "landstinget" in emp_lc:
         return "region", employer
 
-    # Myndighet
-    for myndighet in orgs.get("myndigheter", []):
-        if myndighet.lower() in emp_lc:
+    # Myndighet.
+    for myndighet in sorted(orgs.get("myndigheter", []), key=len, reverse=True):
+        if _word_match(myndighet, employer):
             return "myndighet", myndighet
 
-    # Kommunala bolag: kommun + bolag-suffix
-    for kommun in orgs.get("kommuner", []):
-        k_lc = kommun.lower()
-        if k_lc in emp_lc or f"{k_lc}s " in emp_lc:
-            for suffix in orgs.get("kommunala_bolag_suffix", []):
-                if suffix.lower() in emp_lc:
-                    return "kommunalt_bolag", f"{kommun} – {employer}"
-            # Vanlig kommun: "Stockholms stad", "Uppsala kommun" osv
-            if "kommun" in emp_lc or " stad" in emp_lc or emp_lc == k_lc:
-                return "kommun", f"{kommun} kommun"
+    # Kommunala bolag och kommuner. Längre kommunnamn först
+    # ("Upplands Väsby" före "Vara" t.ex.).
+    for kommun in sorted(orgs.get("kommuner", []), key=len, reverse=True):
+        if not _word_match(kommun, employer):
+            continue
+        for suffix in orgs.get("kommunala_bolag_suffix", []):
+            if suffix.lower() in emp_lc:
+                return "kommunalt_bolag", f"{kommun} – {employer}"
+        if "kommun" in emp_lc or " stad" in emp_lc or emp_lc == kommun.lower():
+            return "kommun", f"{kommun} kommun"
 
     return "okänd", employer
 
