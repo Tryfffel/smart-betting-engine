@@ -1,0 +1,52 @@
+# Mål-roller för A-lead-klassning.
+# Matchning sker case-insensitive på substring mot annonsens rubrik OCH
+# occupation.label (Platsbanken-rollkategori).
+
+chef:
+  - kommundirektör
+  - stadsdirektör
+  - kommunchef
+  - förvaltningschef
+  - avdelningschef
+  - enhetschef
+  - sektionschef
+  - HR-chef
+  - HR chef
+  - personalchef
+  - ekonomichef
+  - IT-chef
+  - IT chef
+  - digitaliseringschef
+  - kommunikationschef
+  - informationschef
+  - samhällsbyggnadschef
+  - planchef
+  - bygglovschef
+  - byggchef
+  - socialchef
+  - omsorgschef
+  - kanslichef
+  - säkerhetschef
+  - miljöchef
+  - VD
+  - verkställande direktör
+
+specialist:
+  - controller
+  - redovisningsekonom
+  - samhällsplanerare
+  - fysisk planerare
+  - exploateringsingenjör
+  - mark- och exploateringshandläggare
+  - markhandläggare
+  - upphandlare
+  - upphandlingsstrateg
+  - inköpare
+  - kommunjurist
+  - jurist
+  - utredare
+  - strateg
+  - projektledare
+  - verksamhetsutvecklare
+  - GIS-ingenjör
+  - GIS-strateg

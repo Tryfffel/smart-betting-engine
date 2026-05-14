@@ -1,0 +1,28 @@
+# Google-sökfraser som src/sources/linkedin.py kör via Anthropics web_search
+# för att hitta LinkedIn-publicerade jobbannonser. Begränsa till ~10 stycken
+# av kostnadsskäl (web_search debiteras per sökning).
+#
+# Varje query kombineras automatiskt med "Sverige" och fönstret "senaste
+# {days} dagarna" i prompten.
+
+queries:
+  - id: chef-kommun
+    query: 'site:linkedin.com/jobs ("kommundirektör" OR "förvaltningschef" OR "avdelningschef" OR "enhetschef") kommun'
+  - id: chef-hr-ekonomi
+    query: 'site:linkedin.com/jobs ("HR-chef" OR "personalchef" OR "ekonomichef" OR "kommunikationschef") kommun OR region'
+  - id: chef-region
+    query: 'site:linkedin.com/jobs "Region" ("avdelningschef" OR "verksamhetschef" OR "enhetschef")'
+  - id: chef-it-digi
+    query: 'site:linkedin.com/jobs ("IT-chef" OR "digitaliseringschef" OR "CIO") offentlig OR kommun OR region'
+  - id: chef-samhallsbyggnad
+    query: 'site:linkedin.com/jobs ("samhällsbyggnadschef" OR "planchef" OR "bygglovschef" OR "socialchef" OR "omsorgschef")'
+  - id: chef-vd-kommunalt-bolag
+    query: 'site:linkedin.com/jobs "VD" ("kommunalt bolag" OR "bostäder AB" OR "energi AB" OR "stadshus")'
+  - id: byra-mercuri-novare
+    query: 'site:linkedin.com/jobs ("Mercuri Urval" OR "Novare Public" OR "Compass Human Resources" OR "SOURCE Executive") chef'
+  - id: byra-wise-experis
+    query: 'site:linkedin.com/jobs ("Wise Group" OR "Wise Professionals" OR "Jefferson Wells" OR "Experis") offentlig'
+  - id: specialist-planering
+    query: 'site:linkedin.com/jobs ("samhällsplanerare" OR "fysisk planerare" OR "exploateringsingenjör" OR "GIS-ingenjör") kommun'
+  - id: specialist-upphandling-jurist
+    query: 'site:linkedin.com/jobs ("upphandlare" OR "upphandlingsstrateg" OR "kommunjurist" OR "utredare") offentlig'

@@ -1,0 +1,25 @@
+# Roller som filtreras bort helt (skrivs inte ens till DB).
+# Substring-match, case-insensitive.
+exkluderade_roller:
+  - lärare
+  - förskollärare
+  - fritidspedagog
+  - barnskötare
+  - elevassistent
+  - sjuksköterska
+  - undersköterska
+  - vårdbiträde
+  - personlig assistent
+  - boendestödjare
+  - habiliteringspersonal
+  - kock
+  - kokerska
+  - måltidsbiträde
+  - lokalvårdare
+  - städare
+  - parkarbetare
+  - vaktmästare
+  - skötare
+  - omsorgsassistent
+  - hemtjänstpersonal
+  - undersköters # plural-/böjningsskydd

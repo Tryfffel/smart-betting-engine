@@ -1,0 +1,65 @@
+name: Lead research agent
+
+on:
+  schedule:
+    # Måndag, onsdag, fredag kl 05:30 UTC (~06:30-07:30 Stockholm)
+    - cron: "30 5 * * 1,3,5"
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "Antal dagar bakåt"
+        required: false
+        default: "3"
+      no_linkedin:
+        description: "Hoppa LinkedIn-källan"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: dagens-samhalle-leadagent
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: claude/lead-research-agent-FLkSF
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run agent
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GOOGLE_SA_JSON: ${{ secrets.GOOGLE_SA_JSON }}
+          GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+          DAYS: ${{ github.event.inputs.days || '3' }}
+          NO_LINKEDIN: ${{ github.event.inputs.no_linkedin || 'false' }}
+        run: |
+          FLAGS="--days $DAYS"
+          if [ "$NO_LINKEDIN" = "true" ]; then FLAGS="$FLAGS --no-linkedin"; fi
+          uv run python -m src.main run $FLAGS
+
+      - name: Commit updated leads.db
+        working-directory: .
+        run: |
+          git config user.name "leadagent-bot"
+          git config user.email "leadagent-bot@users.noreply.github.com"
+          git add dagens-samhalle-leadagent/data/leads.db
+          if git diff --staged --quiet; then
+            echo "Ingen DB-ändring att committa."
+          else
+            git commit -m "chore: leadagent körning $(date -u +%F) [skip ci]"
+            git push origin HEAD:claude/lead-research-agent-FLkSF
+          fi
