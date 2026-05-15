@@ -1,17 +1,29 @@
 # Roller som filtreras bort helt (skrivs inte ens till DB).
-# Substring-match, case-insensitive.
+# Substring-match med ordgränser, case-insensitive.
+
 exkluderade_roller:
+  # Pedagogik
   - lärare
   - förskollärare
   - fritidspedagog
+  - speciallärare
+  - specialpedagog
+  - rektor              # förändras vid behov — ofta för operativ
   - barnskötare
   - elevassistent
+
+  # Vård och omsorg
   - sjuksköterska
   - undersköterska
   - vårdbiträde
   - personlig assistent
   - boendestödjare
   - habiliteringspersonal
+  - omsorgsassistent
+  - hemtjänstpersonal
+  - skötare
+
+  # Service och drift
   - kock
   - kokerska
   - måltidsbiträde
@@ -19,7 +31,50 @@ exkluderade_roller:
   - städare
   - parkarbetare
   - vaktmästare
-  - skötare
-  - omsorgsassistent
-  - hemtjänstpersonal
-  - undersköters # plural-/böjningsskydd
+
+  # Handläggare / koordinator-nivå – för operativt för annonsförsäljning
+  - handläggare
+  - koordinator
+  - assistent
+  - administratör
+  - sekreterare
+  - registrator
+  - kanslist
+  - resurspedagog
+
+  # Mellanchefer – per nyligen beslutat skärpt filter
+  - avdelningschef
+  - enhetschef
+  - sektionschef
+  - gruppchef
+  - områdeschef
+  - teamledare
+  - team lead
+  - biträdande chef
+  - bitr. chef
+  - tf chef            # tillförordnad
+  - interim chef
+  - vikarierande chef
+
+  # Övrigt brus från Indeed/LinkedIn
+  - sales manager
+  - account manager
+  - sales consultant
+  - säljkonsult
+  - butiksbiträde
+
+# Sammansatta ord vars sista del räcker för att exkludera annonsen.
+# Word-boundary-matchningen för listan ovan fångar inte sammansatta ord som
+# "modersmålslärare", "anestesisjuksköterska" osv. Lägg svenska yrkessuffix
+# här istället för att räkna upp varje variant.
+compound_suffix_exkluderingar:
+  - lärare       # modersmålslärare, slöjdlärare, ämneslärare osv
+  - pedagog      # fritidspedagog, specialpedagog, klasspedagog
+  - sköterska    # sjuksköterska, undersköterska, anestesisjuksköterska
+  - läkare       # ST-läkare, husläkare, vikarierande läkare
+  - handläggare  # LSS-handläggare, biståndshandläggare, miljöhandläggare
+  - arbetare     # vårdarbetare, parkarbetare, byggarbetare
+  - skötare      # boendeskötare, djurskötare
+  - assistent    # personlig assistent, elevassistent, vårdassistent
+  - biträde      # vårdbiträde, måltidsbiträde, butiksbiträde
+  - vårdare      # barnvårdare, djurvårdare

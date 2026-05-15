@@ -43,6 +43,19 @@ def _exkluderingar() -> list[str]:
     return _load_yaml("exkluderingar.yaml")["exkluderade_roller"]
 
 
+def _compound_suffix_exkluderingar() -> list[str]:
+    data = _load_yaml("exkluderingar.yaml")
+    return data.get("compound_suffix_exkluderingar", [])
+
+
+def _suffix_match(suffix: str, haystack: str) -> bool:
+    """Matcha `suffix` som sista delen av ett (ev. sammansatt) ord, t.ex.
+    \"lärare\" matchar \"Modersmålslärare\" men inte \"lärare\" inne i en
+    annan kontext."""
+    pattern = r"\w*" + re.escape(suffix) + r"s?(?!\w)"
+    return re.search(pattern, haystack, flags=re.IGNORECASE) is not None
+
+
 def _word_match(needle: str, haystack: str) -> bool:
     """Substring-match med ordgränser, case-insensitive och tål svenska tecken
     + genitiv-s. Hindrar t.ex. \"Sala\" från att matcha \"Uppsala\"."""
@@ -90,20 +103,28 @@ def _match_org(employer: str) -> tuple[OrgTyp, str]:
 
 
 def _match_role(titel: str, occupation_label: str | None) -> tuple[RoleBucket, str]:
-    """Returnera (role_bucket, matched_role)."""
-    haystack = " ".join(s.lower() for s in [titel, occupation_label or ""])
+    """Returnera (role_bucket, matched_role).
 
-    # Exkluderingar har högsta prio
-    for ex in _exkluderingar():
-        if ex.lower() in haystack:
+    Använder word-boundaries så att t.ex. \"VD\" inte matchar inuti
+    \"Avdelningschef\". Längre rollnamn testas före kortare (t.ex.
+    \"kommunikationschef\" före \"chef\")."""
+    haystack = " ".join(s for s in [titel, occupation_label or ""] if s)
+
+    # Exkluderingar har högsta prio (inkl. mellanchefer + lärare m.fl.)
+    for ex in sorted(_exkluderingar(), key=len, reverse=True):
+        if _word_match(ex, haystack):
             return "exkluderad", ex
+    # Suffix-exkluderingar fångar sammansatta yrkesord
+    for suffix in sorted(_compound_suffix_exkluderingar(), key=len, reverse=True):
+        if _suffix_match(suffix, haystack):
+            return "exkluderad", suffix
 
     roller = _roller()
-    for chef in roller.get("chef", []):
-        if chef.lower() in haystack:
+    for chef in sorted(roller.get("chef", []), key=len, reverse=True):
+        if _word_match(chef, haystack):
             return "chef", chef
-    for spec in roller.get("specialist", []):
-        if spec.lower() in haystack:
+    for spec in sorted(roller.get("specialist", []), key=len, reverse=True):
+        if _word_match(spec, haystack):
             return "specialist", spec
 
     return "okänd", ""

@@ -35,15 +35,18 @@ Prisbild (kronor):
 Ditt jobb: klassa en jobbannons som A, B eller C utifrån sannolikheten att
 organisationen är intresserad av att köpa en platsannons hos oss.
 
-A = Chef ELLER kvalificerad specialist hos en mål-organisation (kommun,
-    region, myndighet, kommunalt bolag, eller rekryteringsbyrå mot offentlig
-    sektor). Hög köpsannolikhet. Exempel: kommundirektör, HR-chef, controller
-    hos Stockholms stad; VD för kommunalt bostadsbolag; konsultchef-uppdrag
-    på Mercuri Urval.
-B = Relevant men lägre prio (handläggare/koordinator i mål-org, eller mer
-    junior roll). Värt att kontakta vid lugn period.
-C = Tekniskt matchar men låg affärspotential. T.ex. tidsbegränsade vikariat,
-    visstidsuppdrag, eller mycket smala roller.
+A = Senior topp-chef ELLER förvaltningschef per område ELLER nyckelperson
+    i stabsfunktion hos en mål-organisation (kommun, region, myndighet,
+    kommunalt bolag, eller rekryteringsbyrå mot offentlig sektor).
+    Exempel: kommundirektör, förvaltningschef, socialchef, samhällsbyggnadschef,
+    HR-chef, ekonomichef, kommunikationschef, IT-chef, VD i kommunalt bolag,
+    eller motsvarande uppdrag via Mercuri Urval/Poolia/Novare.
+    Mellanchefer (enhets-/avdelnings-/sektionschef) räknas INTE som A.
+B = Sparas för specialfall – används i praktiken sällan. Ex: rekryteringsbyrå-
+    annons utan tydlig roll/uppdragsgivare.
+C = Specialist hos mål-org (controller, samhällsplanerare, kommunjurist,
+    upphandlare) eller annan kvalificerad roll som inte är chef. Behålls för
+    marknadsinsyn, säljs inte aktivt mot.
 
 Svara ENDAST med ett JSON-objekt i exakt detta format, ingen extra text:
 {"score": "A", "motivering": "Kort motivering på svenska, 1-2 meningar."}
