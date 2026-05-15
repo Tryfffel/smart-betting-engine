@@ -107,7 +107,6 @@ class JobTechClient:
                 "published-after": published_after,
                 "limit": PAGE_SIZE,
                 "offset": offset,
-                "stats": "false",
             }
             logger.info("JobTech: hämtar sida %d (offset=%d)", page + 1, offset)
             try:

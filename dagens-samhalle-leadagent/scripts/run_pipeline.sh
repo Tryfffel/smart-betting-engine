@@ -30,7 +30,7 @@ fi
 export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
 
 # Kör pipelinen. Default 3 dagars fönster räcker mellan måndag och torsdag.
-if uv run python -m src.main run --days 3 >> logs/runs.log 2>&1; then
+if uv run python -m src.main run --days 3 --no-score >> logs/runs.log 2>&1; then
     echo "=== Run completed OK $(date '+%Y-%m-%d %H:%M:%S') ===" >> logs/runs.log
 else
     EXIT=$?

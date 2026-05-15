@@ -10,7 +10,7 @@ from typing import Iterable
 import typer
 from dotenv import load_dotenv
 
-from src import enrich, export, filter as flt, score, storage
+from src import drive, enrich, export, filter as flt, score, storage
 from src.models import JobAd, Lead
 from src.sources import indeed, jobtech, linkedin
 
@@ -91,11 +91,17 @@ def run(
     no_enrich: bool = typer.Option(False, "--no-enrich", help="Hoppa över kontaktperson-sökning"),
     no_linkedin: bool = typer.Option(False, "--no-linkedin", help="Hoppa över LinkedIn-källan"),
     no_indeed: bool = typer.Option(False, "--no-indeed", help="Hoppa över Indeed-källan (staging-fil)"),
+    no_drive: bool = typer.Option(False, "--no-drive", help="Hoppa över Drive-upload"),
+    no_score: bool = typer.Option(
+        False, "--no-score",
+        help="Kör utan Anthropic — alla leads defaultar till B. Force-ar --no-enrich och --no-linkedin.",
+    ),
 ) -> None:
-    """Lokal pipeline: hämta → filtrera → score → enrich → export.
-
-    Drive-upload sker via Claude Code-orkestrering (se RUNBOOK.md), inte
-    här. Skriptet är en byggsten."""
+    """Lokal pipeline: hämta → filtrera → score → enrich → export → drive."""
+    if no_score:
+        no_enrich = True
+        no_linkedin = True
+        logger.info("No-AI-mode: --no-score → tvingar --no-enrich + --no-linkedin")
     today = date.today()
     logger.info("=== Lead-research-agent startar (days=%d) ===", days)
 
@@ -113,9 +119,14 @@ def run(
         storage.record_run(today, days, len(ads), 0, 0, 0, 0)
         return
 
-    logger.info("Scoring av %d annonser…", len(classified))
-    scored = score.score_batch(classified)
-    leads = [_build_lead(ad, cls, sc) for ad, cls, sc in scored]
+    if no_score:
+        logger.info("Hoppar över scoring (--no-score) — alla leads defaultar till B")
+        stub = score._ScoreResponse(score="B", motivering="(no-AI mode — ej scorad)")
+        leads = [_build_lead(ad, cls, stub) for ad, cls in classified]
+    else:
+        logger.info("Scoring av %d annonser…", len(classified))
+        scored = score.score_batch(classified)
+        leads = [_build_lead(ad, cls, sc) for ad, cls, sc in scored]
 
     a = sum(1 for l in leads if l.score == "A")
     b = sum(1 for l in leads if l.score == "B")
@@ -132,7 +143,17 @@ def run(
 
     run_dir = export.write_outputs(leads, today)
     logger.info("Output skrivet till %s", run_dir)
-    logger.info("Drive-upload sker via Claude Code MCP (se RUNBOOK.md)")
+
+    if no_drive:
+        logger.info("Hoppar över Drive-upload (--no-drive)")
+    else:
+        try:
+            link = drive.upload_run(run_dir, today)
+            logger.info("Drive-mapp: %s", link)
+        except Exception:
+            logger.exception("Drive-upload misslyckades")
+            raise
+
     logger.info("=== Klart ===")
 
 
