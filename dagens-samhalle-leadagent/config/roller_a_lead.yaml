@@ -38,6 +38,9 @@ chef:
   - bygglovschef
   - byggchef
   - räddningschef
+  - näringslivschef
+  - näringslivsdirektör
+  - näringslivsdirektor
 
   # Nyckelpersoner / stabsfunktioner – beslutsfattare som köper annonsering
   - HR-chef
