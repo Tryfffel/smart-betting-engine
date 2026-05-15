@@ -115,6 +115,73 @@ Avsluta med en kort sammanfattning:
 ✓ Uppladdat till Drive: <länk till datum-mappen>
 ```
 
+## Schemalagd körning (launchd)
+
+Pipelinen körs automatiskt **måndag och torsdag kl 07:00** via macOS
+`launchd`. Wrapper-skript och plist-template ligger i `scripts/`.
+
+### Installation (engångsjobb)
+
+1. **Byt sökvägar i plisten.** Öppna `scripts/se.dagenssamhalle.leadagent.plist`
+   och ersätt alla `/Users/CHANGEME/path/to/dagens-samhalle-leadagent` med
+   den faktiska projektsökvägen, t.ex. `/Users/david/dev/dagens-samhalle-leadagent`.
+
+2. **Kopiera plisten till LaunchAgents:**
+   ```bash
+   cp scripts/se.dagenssamhalle.leadagent.plist ~/Library/LaunchAgents/
+   ```
+
+3. **Ladda jobbet:**
+   ```bash
+   launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/se.dagenssamhalle.leadagent.plist
+   launchctl enable gui/$(id -u)/se.dagenssamhalle.leadagent
+   ```
+
+4. **Verifiera att det är listat:**
+   ```bash
+   launchctl print gui/$(id -u)/se.dagenssamhalle.leadagent | grep -E '(state|next fire)'
+   ```
+
+### Testkör utan att vänta till måndag
+
+```bash
+launchctl kickstart -k gui/$(id -u)/se.dagenssamhalle.leadagent
+tail -f logs/runs.log
+```
+
+### Avinstallera / pausa
+
+```bash
+launchctl bootout gui/$(id -u)/se.dagenssamhalle.leadagent
+```
+
+### Ändra schema
+
+Edita `~/Library/LaunchAgents/se.dagenssamhalle.leadagent.plist` —
+`StartCalendarInterval` styr veckodagar och tider. Weekday 1=mån, 2=tis,
+3=ons, 4=tor, 5=fre, 6=lör, 0/7=sön. Efter ändring:
+```bash
+launchctl bootout gui/$(id -u)/se.dagenssamhalle.leadagent
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/se.dagenssamhalle.leadagent.plist
+```
+
+### Logging
+
+- `logs/runs.log` – pipelinens stdout/stderr per körning.
+- `logs/launchd.out.log` / `logs/launchd.err.log` – launchd-nivå (start/stopp/exit codes).
+
+Båda är gitignored.
+
+### Macen sover vid 07:00?
+
+launchd kör inte schemalagda jobb medan datorn sover. Sätt på "Wake for
+network access" i Systeminställningar → Energisparare, eller väck Macen
+explicit 5 min innan:
+```bash
+sudo pmset repeat wakeorpoweron MR 06:55:00
+```
+(MR = Mondays + thuRsdays. Se `man pmset`.)
+
 ## När något går fel
 
 - **JobTech ger 0 träffar:** kontrollera `published-after`-formatet och
