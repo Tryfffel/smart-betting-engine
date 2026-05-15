@@ -122,25 +122,27 @@ Pipelinen körs automatiskt **måndag och torsdag kl 07:00** via macOS
 
 ### Installation (engångsjobb)
 
-1. **Byt sökvägar i plisten.** Öppna `scripts/se.dagenssamhalle.leadagent.plist`
-   och ersätt alla `/Users/CHANGEME/path/to/dagens-samhalle-leadagent` med
-   den faktiska projektsökvägen, t.ex. `/Users/david/dev/dagens-samhalle-leadagent`.
+Det finns ett skript som gör hela installationen åt dig — det auto-detekterar
+projektsökvägen, substituerar in den i plisten, kopierar till
+`~/Library/LaunchAgents/`, och laddar jobbet med `launchctl`. Idempotent:
 
-2. **Kopiera plisten till LaunchAgents:**
-   ```bash
-   cp scripts/se.dagenssamhalle.leadagent.plist ~/Library/LaunchAgents/
-   ```
+```bash
+./scripts/install_schedule.sh
+```
 
-3. **Ladda jobbet:**
-   ```bash
-   launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/se.dagenssamhalle.leadagent.plist
-   launchctl enable gui/$(id -u)/se.dagenssamhalle.leadagent
-   ```
+**Verifiera att det är listat:**
+```bash
+launchctl print gui/$(id -u)/se.dagenssamhalle.leadagent | grep -E '(state|next fire)'
+```
 
-4. **Verifiera att det är listat:**
-   ```bash
-   launchctl print gui/$(id -u)/se.dagenssamhalle.leadagent | grep -E '(state|next fire)'
-   ```
+### Manuell installation (om du föredrar det)
+
+1. Byt ut `/Users/CHANGEME/path/to/dagens-samhalle-leadagent` i
+   `scripts/se.dagenssamhalle.leadagent.plist` mot din faktiska sökväg
+   (3 ställen).
+2. `cp scripts/se.dagenssamhalle.leadagent.plist ~/Library/LaunchAgents/`
+3. `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/se.dagenssamhalle.leadagent.plist`
+4. `launchctl enable gui/$(id -u)/se.dagenssamhalle.leadagent`
 
 ### Testkör utan att vänta till måndag
 
@@ -152,8 +154,10 @@ tail -f logs/runs.log
 ### Avinstallera / pausa
 
 ```bash
-launchctl bootout gui/$(id -u)/se.dagenssamhalle.leadagent
+./scripts/uninstall_schedule.sh
 ```
+(eller manuellt: `launchctl bootout gui/$(id -u)/se.dagenssamhalle.leadagent`
+och radera `~/Library/LaunchAgents/se.dagenssamhalle.leadagent.plist`)
 
 ### Ändra schema
 
