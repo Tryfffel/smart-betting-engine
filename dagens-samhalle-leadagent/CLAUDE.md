@@ -17,6 +17,13 @@ exakt.
 - `src/sources/linkedin.py` – LinkedIn via Anthropic web_search (Sonnet).
 - `src/sources/indeed.py` – Indeed via JSON-staging-fil som Claude Code
   fyller på i förväg från MCP `search_jobs`.
+- `src/sources/politiker.py` – kommunstyrelseordförande + regionstyrelse-
+  ordförande via Wikidata SPARQL + seed-fallback. Adderat efter workshop
+  2026-05-21 ("bredda till politiskt engagerade").
+- `src/sources/signals.py` – tidiga rekryterings-signaler från
+  pressmeddelanden, fullmäktige-protokoll och LinkedIn-poster. Sonnet
+  extraherar strukturerade signaler från råtext. Skriver separat
+  `outputs/YYYY-MM-DD/signals.csv` istället för att blandas in i leads.
 - `src/filter.py` – klassar org-typ + roll mot `config/*.yaml`.
 - `src/score.py` – Claude Haiku 4.5 ger A/B/C + motivering (prompt-caching).
 - `src/enrich.py` – Claude Sonnet 4.6 + web_search letar kontaktperson på A-leads.

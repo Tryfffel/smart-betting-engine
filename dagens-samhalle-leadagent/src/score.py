@@ -24,23 +24,27 @@ platsannonser i tidningen och på dagenssamhalle.se/lediga-jobb. Räckvidd:
 125 000 läsare/vecka enligt Kantar Sifo 2024 — främst chefer, beslutsfattare
 och tjänstemän i kommuner, regioner och statliga myndigheter.
 
-Prisbild (kronor):
+Prisbild (kronor), DIGITAL-FÖRST per workshop 2026-05-21 — Print fasas ut
+inför 2027 och nämns inte i pitch-rekommendationer längre:
 - Digital annons: 12 400
-- Print: från 12 400
 - Sociala medier: 10 000
 - Native: 29 900
 - Banner: 14 900
 - Tillägg DN/DI/AH/DM: från 19 900
+(Print finns tekniskt kvar för 12 400 men ramavtalen styrs om till digitalt.)
 
 Ditt jobb: klassa en jobbannons som A, B eller C utifrån sannolikheten att
 organisationen är intresserad av att köpa en platsannons hos oss.
 
 A = Senior topp-chef ELLER förvaltningschef per område ELLER nyckelperson
     i stabsfunktion hos en mål-organisation (kommun, region, myndighet,
-    kommunalt bolag, eller rekryteringsbyrå mot offentlig sektor).
+    kommunalt bolag, eller rekryteringsbyrå mot offentlig sektor) ELLER
+    politisk beslutsfattare (kommunstyrelseordförande, regionstyrelse-
+    ordförande, kommunalråd, nämndordförande).
     Exempel: kommundirektör, förvaltningschef, socialchef, samhällsbyggnadschef,
     HR-chef, ekonomichef, kommunikationschef, IT-chef, VD i kommunalt bolag,
-    eller motsvarande uppdrag via Mercuri Urval/Poolia/Novare.
+    eller motsvarande uppdrag via Mercuri Urval/Poolia/Novare. Politiker är
+    inte annonsköpare men målgrupp för webbinarier och tidig dialog.
     Mellanchefer (enhets-/avdelnings-/sektionschef) räknas INTE som A.
 B = Sparas för specialfall – används i praktiken sällan. Ex: rekryteringsbyrå-
     annons utan tydlig roll/uppdragsgivare.

@@ -104,17 +104,24 @@ def _slugify(text: str) -> str:
 
 
 def _pitch_for(lead: Lead) -> str:
-    """Enkel regelbaserad pitch-notering — finjusteras senare."""
+    """Regelbaserad pitch-notering. Digital-first per workshop 2026-05-21:
+    fasa ut Print, styr om ramavtal till digital-tunga paket."""
     parts = []
-    if lead.org_typ == "kommun":
+    if lead.role_bucket == "politiker":
         parts.append(
-            "Kommunchefer och förvaltningsledning är överrepresenterade bland "
-            "Dagens Samhälles 125 000 läsare/vecka."
+            "Politisk beslutsfattare — inte annonsköpare, men målgrupp för webbinarier "
+            "och tidig dialog kring rekryteringstrender i offentlig sektor."
+        )
+    elif lead.org_typ == "kommun":
+        parts.append(
+            "Kommunchefer och förvaltningsledning är överrepresenterade bland Dagens "
+            "Samhälles 125 000 läsare/vecka. Föreslå Native (29 900) eller "
+            "Digital + Sociala medier (~22 400) — Print fasas ut 2027."
         )
     elif lead.org_typ == "region":
         parts.append(
-            "Beslutsfattare i regioner läser Dagens Samhälle veckovis — "
-            "Digital + Sociala medier-paketet (~22 400 kr) ger bred täckning."
+            "Beslutsfattare i regioner läser Dagens Samhälle veckovis. "
+            "Digital + Sociala medier-paketet (~22 400 kr) ger bred täckning utan print."
         )
     elif lead.org_typ == "myndighet":
         parts.append(
@@ -123,13 +130,14 @@ def _pitch_for(lead: Lead) -> str:
         )
     elif lead.org_typ == "kommunalt_bolag":
         parts.append(
-            "Kommunala bolag har ofta utrymme i kommunikationsbudget — "
-            "Print + Digital-kombo (~25 000) brukar bita."
+            "Kommunala bolag har egen kommunikationsbudget — föreslå Native (29 900) "
+            "eller Banner (14 900) + Sociala medier (10 000)."
         )
     elif lead.org_typ == "rekryteringsbyra":
         parts.append(
             "Rekryteringsbyrå för offentlig sektor — direkt köpare. Hänvisa till "
-            "kommun-/region-paket. Kontorets seniora konsult är ofta beslutsfattare."
+            "digital-paket för flera samtidiga uppdrag. Kontorets seniora konsult "
+            "är ofta beslutsfattare."
         )
     if lead.sista_ansokningsdag:
         parts.append(f"Sista ansökan: {lead.sista_ansokningsdag.isoformat()} — agera snabbt.")
@@ -149,6 +157,11 @@ def write_outputs(leads: list[Lead], run_date: date) -> Path:
 
     logger.info("Export: %d leads skrivna till %s", len(sorted_leads), run_dir)
     return run_dir
+
+
+def signals_csv_path(run_date: date) -> Path:
+    """Sökväg där signal-spårets CSV ska hamna."""
+    return OUTPUTS / run_date.isoformat() / "signals.csv"
 
 
 def _write_xlsx(leads: list[Lead], path: Path) -> None:

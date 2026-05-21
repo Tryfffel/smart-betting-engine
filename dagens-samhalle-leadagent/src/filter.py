@@ -102,6 +102,12 @@ def _match_org(employer: str) -> tuple[OrgTyp, str]:
     return "okänd", employer
 
 
+def _politiker_roller() -> list[str]:
+    """Plattar `config/politiker_roller.yaml` till en lista."""
+    data = _load_yaml("politiker_roller.yaml")
+    return list(data.get("kommun", [])) + list(data.get("region", []))
+
+
 def _match_role(titel: str, occupation_label: str | None) -> tuple[RoleBucket, str]:
     """Returnera (role_bucket, matched_role).
 
@@ -109,6 +115,12 @@ def _match_role(titel: str, occupation_label: str | None) -> tuple[RoleBucket, s
     \"Avdelningschef\". Längre rollnamn testas före kortare (t.ex.
     \"kommunikationschef\" före \"chef\")."""
     haystack = " ".join(s for s in [titel, occupation_label or ""] if s)
+
+    # Politiker-roller testas före exkluderingar så "kommunalråd" inte
+    # plockas av en exkludering av misstag.
+    for rol in sorted(_politiker_roller(), key=len, reverse=True):
+        if _word_match(rol, haystack):
+            return "politiker", rol
 
     # Exkluderingar har högsta prio (inkl. mellanchefer + lärare m.fl.)
     for ex in sorted(_exkluderingar(), key=len, reverse=True):
