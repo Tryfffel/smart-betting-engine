@@ -1,0 +1,41 @@
+# RSS-feeds till svenska kommuners och regioners pressmeddelanden.
+# Används av `src/sources/signals.py` för att hitta tidiga
+# rekryteringssignaler (chefsavgångar, organisationsöversyner).
+#
+# Fyll på listan i takt med att fler kommuner verifieras. Format:
+#
+#   - org: "Stockholm kommun"
+#     typ: kommun
+#     rss: "https://example.com/feed.xml"
+
+kommun_feeds:
+  # Topp-20 efter befolkning. Verifiera RSS-URL:erna lokalt eftersom
+  # kommunerna byter CMS då och då — sandboxen kan inte nå dem.
+  - org: "Stockholms stad"
+    typ: kommun
+    rss: "https://news.cision.com/se/stockholms-stad/rss"  # TODO: verifiera
+  - org: "Göteborgs stad"
+    typ: kommun
+    rss: "https://www.goteborg.se/rss/nyheter"  # TODO: verifiera
+  - org: "Malmö stad"
+    typ: kommun
+    rss: "https://malmo.se/rss"  # TODO: verifiera
+  # Lägg på fler kommuner allt eftersom.
+
+region_feeds:
+  - org: "Region Stockholm"
+    typ: region
+    rss: "https://www.regionstockholm.se/rss"  # TODO: verifiera
+  - org: "Västra Götalandsregionen"
+    typ: region
+    rss: "https://www.vgregion.se/rss"  # TODO: verifiera
+  - org: "Region Skåne"
+    typ: region
+    rss: "https://www.skane.se/rss"  # TODO: verifiera
+
+# Alternativ källa: Mynewsdesk har ett samlat flöde för svenska offentliga
+# pressmeddelanden under sin Newsroom-API. Kräver gratis API-nyckel.
+mynewsdesk:
+  enabled: false
+  api_key_env: MYNEWSDESK_API_KEY
+  org_filter: ["kommun", "region", "myndighet"]

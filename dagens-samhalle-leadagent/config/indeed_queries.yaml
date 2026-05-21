@@ -1,0 +1,30 @@
+# Indeed-sökfraser som Claude Code anropar via MCP `search_jobs` innan
+# Python-pipelinen körs. Träffarna sparas som JSON i /tmp/leadagent_indeed.json
+# och läses av src/sources/indeed.py.
+#
+# Indeed-MCP:n returnerar markdown med ~10 träffar per anrop. Vi täcker
+# kompletterande söknischer som JobTech kan missa (Indeed-only annonser,
+# rekryteringsbyrå-publicerade jobb).
+
+queries:
+  - id: chef-kommun-region
+    search: "kommunchef OR förvaltningschef OR avdelningschef OR enhetschef kommun"
+    location: "Sverige"
+  - id: chef-hr-ekonomi-kommunikation
+    search: "HR-chef OR personalchef OR ekonomichef OR kommunikationschef offentlig"
+    location: "Sverige"
+  - id: chef-it-digi
+    search: "IT-chef OR digitaliseringschef OR CIO kommun OR region"
+    location: "Sverige"
+  - id: vd-kommunalt-bolag
+    search: "VD kommunalt bolag OR bostadsbolag OR energibolag"
+    location: "Sverige"
+  - id: byraer
+    search: "Mercuri Urval OR Novare Public OR Compass Human Resources OR Poolia OFFENTLIG"
+    location: "Sverige"
+  - id: specialist-planering
+    search: "samhällsplanerare OR exploateringsingenjör OR GIS-ingenjör kommun"
+    location: "Sverige"
+  - id: specialist-upphandling-jurist
+    search: "upphandlare OR kommunjurist OR utredare offentlig"
+    location: "Sverige"

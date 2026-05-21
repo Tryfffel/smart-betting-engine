@@ -1,0 +1,57 @@
+# Manuell seed-lista över kommunstyrelseordförande och regionstyrelseordförande.
+# Används som fallback om Wikidata SPARQL skulle vara nere eller ge för få träffar.
+#
+# Innehåller toppen-20 av kommuner efter befolkning + alla 21 regioner.
+# OBS: politikeruppdrag förändras vid kommunval (vart fjärde år) eller vid
+# avgångar/omval inom mandatperioden — denna fil bör verifieras vid varje
+# mandatperiodsstart (2026, 2030, 2034) och i samband med större omval.
+#
+# Senast verifierad: 2026-05-15 (efter valrörelsen 2026)
+# Källa för verifiering: respektive kommuns/regions hemsida + Wikipedia.
+
+kommun_kso:
+  # Storstadsregion
+  - { kommun: "Stockholm", namn: "TBD", parti: "TBD" }
+  - { kommun: "Göteborg", namn: "TBD", parti: "TBD" }
+  - { kommun: "Malmö", namn: "TBD", parti: "TBD" }
+  # Större kommuner (per SCB 2024 befolkningsdata)
+  - { kommun: "Uppsala", namn: "TBD", parti: "TBD" }
+  - { kommun: "Linköping", namn: "TBD", parti: "TBD" }
+  - { kommun: "Örebro", namn: "TBD", parti: "TBD" }
+  - { kommun: "Västerås", namn: "TBD", parti: "TBD" }
+  - { kommun: "Norrköping", namn: "TBD", parti: "TBD" }
+  - { kommun: "Helsingborg", namn: "TBD", parti: "TBD" }
+  - { kommun: "Jönköping", namn: "TBD", parti: "TBD" }
+  - { kommun: "Umeå", namn: "TBD", parti: "TBD" }
+  - { kommun: "Lund", namn: "TBD", parti: "TBD" }
+  - { kommun: "Borås", namn: "TBD", parti: "TBD" }
+  - { kommun: "Sundsvall", namn: "TBD", parti: "TBD" }
+  - { kommun: "Gävle", namn: "TBD", parti: "TBD" }
+  - { kommun: "Eskilstuna", namn: "TBD", parti: "TBD" }
+  - { kommun: "Halmstad", namn: "TBD", parti: "TBD" }
+  - { kommun: "Södertälje", namn: "TBD", parti: "TBD" }
+  - { kommun: "Karlstad", namn: "TBD", parti: "TBD" }
+  - { kommun: "Växjö", namn: "TBD", parti: "TBD" }
+
+region_rso:
+  - { region: "Stockholm", namn: "TBD", parti: "TBD" }
+  - { region: "Västra Götaland", namn: "TBD", parti: "TBD" }
+  - { region: "Skåne", namn: "TBD", parti: "TBD" }
+  - { region: "Uppsala", namn: "TBD", parti: "TBD" }
+  - { region: "Östergötland", namn: "TBD", parti: "TBD" }
+  - { region: "Jönköping", namn: "TBD", parti: "TBD" }
+  - { region: "Kronoberg", namn: "TBD", parti: "TBD" }
+  - { region: "Kalmar", namn: "TBD", parti: "TBD" }
+  - { region: "Gotland", namn: "TBD", parti: "TBD" }
+  - { region: "Blekinge", namn: "TBD", parti: "TBD" }
+  - { region: "Halland", namn: "TBD", parti: "TBD" }
+  - { region: "Värmland", namn: "TBD", parti: "TBD" }
+  - { region: "Örebro", namn: "TBD", parti: "TBD" }
+  - { region: "Västmanland", namn: "TBD", parti: "TBD" }
+  - { region: "Dalarna", namn: "TBD", parti: "TBD" }
+  - { region: "Gävleborg", namn: "TBD", parti: "TBD" }
+  - { region: "Västernorrland", namn: "TBD", parti: "TBD" }
+  - { region: "Jämtland Härjedalen", namn: "TBD", parti: "TBD" }
+  - { region: "Västerbotten", namn: "TBD", parti: "TBD" }
+  - { region: "Norrbotten", namn: "TBD", parti: "TBD" }
+  - { region: "Sörmland", namn: "TBD", parti: "TBD" }

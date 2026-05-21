@@ -1,0 +1,30 @@
+# Politiker-roller som ska behandlas som A-leads.
+# Eftersom politiker inte rekryteras via platsannons (de väljs/utses) hämtas
+# de inte från JobTech utan via `src/sources/politiker.py` som läser en
+# kombination av Wikidata SPARQL + manuell seed-data.
+#
+# Källa-prioritet: Wikidata > SKR-data > config/politiker_seed.yaml
+
+kommun:
+  # Allra viktigast – kommunstyrelsens ledning
+  - kommunstyrelseordförande   # "KSO"
+  - kommunalråd
+  - oppositionsråd
+  - kommunstyrelsens vice ordförande
+  # Nämndordförande för stora utgiftsområden
+  - utbildningsnämndens ordförande
+  - barn- och utbildningsnämndens ordförande
+  - socialnämndens ordförande
+  - omsorgsnämndens ordförande
+  - samhällsbyggnadsnämndens ordförande
+  - bygg- och miljönämndens ordförande
+  - tekniska nämndens ordförande
+  - kultur- och fritidsnämndens ordförande
+
+region:
+  - regionstyrelseordförande
+  - regionråd
+  - oppositionsråd
+  - hälso- och sjukvårdsnämndens ordförande
+  - regionala utvecklingsnämndens ordförande
+  - kollektivtrafiknämndens ordförande

@@ -1,0 +1,86 @@
+# Mål-roller för lead-klassning.
+# Matchning sker case-insensitive på substring (med ordgränser) mot annonsens
+# rubrik OCH occupation.label.
+#
+# Allt under `chef` blir A-lead om annonsen är hos en mål-organisation.
+# Allt under `specialist` blir C-lead (marknadsinsyn, inte säljmål).
+# Mellanchefer (avdelnings-/enhets-/sektions-/gruppchef) ligger i
+# exkluderingar.yaml och filtreras bort helt.
+
+chef:
+  # Toppnivå – kommun/region/myndighets-toppen, alltid A
+  - kommundirektör
+  - stadsdirektör
+  - kommunchef
+  - regiondirektör
+  - regiondirektor # variantstavning utan accent
+  - generaldirektör
+  - landshövding
+  - förvaltningschef
+  - kanslichef
+  - säkerhetschef
+  - VD
+  - verkställande direktör
+
+  # Förvaltningschefer per område – ansvarar för en hel förvaltning
+  - socialchef
+  - omsorgschef
+  - vård- och omsorgschef
+  - skolchef
+  - utbildningschef
+  - kulturchef
+  - miljöchef
+  - tekniska chef
+  - teknisk chef
+  - samhällsbyggnadschef
+  - planchef
+  - stadsbyggnadschef
+  - bygglovschef
+  - byggchef
+  - räddningschef
+  - näringslivschef
+  - näringslivsdirektör
+  - näringslivsdirektor
+
+  # Nyckelpersoner / stabsfunktioner – beslutsfattare som köper annonsering
+  - HR-chef
+  - HR chef
+  - HR-direktör
+  - personalchef
+  - personaldirektör
+  - ekonomichef
+  - ekonomidirektör
+  - finanschef
+  - CFO
+  - kommunikationschef
+  - kommunikationsdirektör
+  - informationschef
+  - presschef
+  - marknadschef
+  - marknadsdirektör
+  - IT-chef
+  - IT chef
+  - digitaliseringschef
+  - digitaliseringsdirektör
+  - CIO
+  - CDO
+
+# Specialister behålls för marknadsinsyn (C-lead) men säljs inte direkt mot.
+specialist:
+  - controller
+  - redovisningsekonom
+  - samhällsplanerare
+  - fysisk planerare
+  - exploateringsingenjör
+  - mark- och exploateringshandläggare
+  - markhandläggare
+  - upphandlare
+  - upphandlingsstrateg
+  - inköpare
+  - kommunjurist
+  - jurist
+  - utredare
+  - strateg
+  - verksamhetsutvecklare
+  - GIS-ingenjör
+  - GIS-strateg

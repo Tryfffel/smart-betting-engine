@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+launchd-job för Dagens Samhälle Lead Agent.
+Kör pipelinen måndag och torsdag kl 07:00.
+
+Installationssteg finns i RUNBOOK.md ("Schemalagd körning").
+
+OBS: byt ut /Users/CHANGEME/path/to/dagens-samhalle-leadagent mot din
+faktiska sökväg innan du laddar plisten med launchctl.
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>se.dagenssamhalle.leadagent</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/CHANGEME/path/to/dagens-samhalle-leadagent/scripts/run_pipeline.sh</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/CHANGEME/path/to/dagens-samhalle-leadagent</string>
+
+    <!-- Måndag (Weekday=1) och torsdag (Weekday=4) kl 07:00 -->
+    <key>StartCalendarInterval</key>
+    <array>
+        <dict>
+            <key>Weekday</key>
+            <integer>1</integer>
+            <key>Hour</key>
+            <integer>7</integer>
+            <key>Minute</key>
+            <integer>0</integer>
+        </dict>
+        <dict>
+            <key>Weekday</key>
+            <integer>4</integer>
+            <key>Hour</key>
+            <integer>7</integer>
+            <key>Minute</key>
+            <integer>0</integer>
+        </dict>
+    </array>
+
+    <!-- Om Macen är avstängd kl 07:00, kör så fort den vaknar -->
+    <key>RunAtLoad</key>
+    <false/>
+
+    <key>StandardOutPath</key>
+    <string>/Users/CHANGEME/path/to/dagens-samhalle-leadagent/logs/launchd.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/CHANGEME/path/to/dagens-samhalle-leadagent/logs/launchd.err.log</string>
+
+    <!-- PATH för launchd är minimal — wrapper-skriptet sätter PATH självt,
+         men vi lägger en grund här för säkerhets skull. -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    </dict>
+</dict>
+</plist>
